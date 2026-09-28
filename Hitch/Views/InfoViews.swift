@@ -188,7 +188,7 @@ struct ArchiveView: View {
                             }
                             Spacer()
                             if record.isFinished {
-                                Text(record.emojiRow).font(.system(size: 14))
+                                ResultSquares(record: record, size: 12)
                             } else if record.isStarted {
                                 Text("In progress")
                                     .font(.system(size: 13, weight: .medium))

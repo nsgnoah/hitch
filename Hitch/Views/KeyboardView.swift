@@ -24,7 +24,7 @@ struct KeyboardView: View {
                         ForEach(Array(rows[r]), id: \.self) { c in
                             Button { onLetter(c) } label: {
                                 Text(String(c))
-                                    .font(.system(size: 19, weight: .semibold))
+                                    .font(.system(size: 20, weight: .semibold))
                                     .frame(width: keyWidth, height: 54)
                                     .background(RoundedRectangle(cornerRadius: 6).fill(Color.key))
                             }

@@ -24,6 +24,11 @@ extension Color {
     static let brick = Color(light: 0xB5473A, dark: 0xC45B4E)
     static let stone = Color(light: 0x9E978C, dark: 0x6B665E)
     static let key = Color(light: 0xE4DDCF, dark: 0x3A3B36)
+
+    // Home splash: fixed in both appearances, like a printed cover.
+    static let splash = Color(light: 0x2F6B4F, dark: 0x244F3B)
+    static let cream = Color(light: 0xF7F3EA, dark: 0xF2EDE2)
+    static let nightInk = Color(light: 0x1F2421, dark: 0x1F2421)
 }
 
 extension Font {
@@ -46,5 +51,19 @@ struct PillButtonStyle: ButtonStyle {
             .overlay(Capsule().stroke(Color.ink, lineWidth: filled ? 0 : 1.5))
             .opacity(configuration.isPressed ? 0.75 : 1)
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
+    }
+}
+
+struct SplashButtonStyle: ButtonStyle {
+    let filled: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: 17, weight: .semibold))
+            .frame(maxWidth: .infinity, minHeight: 50)
+            .foregroundStyle(filled ? Color.nightInk : Color.cream)
+            .background(Capsule().fill(filled ? Color.cream : Color.clear))
+            .overlay(Capsule().stroke(Color.cream, lineWidth: filled ? 0 : 1.5))
+            .opacity(configuration.isPressed ? 0.8 : 1)
     }
 }

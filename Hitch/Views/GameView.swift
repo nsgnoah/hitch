@@ -86,25 +86,23 @@ struct GameView: View {
     private var controls: some View {
         VStack(spacing: 10) {
             HStack {
-                Label {
-                    Text(game.record.totalExtra == 0 ? "No extra letters" : "\(game.record.totalExtra) extra letter\(game.record.totalExtra == 1 ? "" : "s")")
+                HStack(spacing: 8) {
+                    Eyebrow("Extra letters")
+                    Text("\(game.record.totalExtra)")
+                        .font(.system(size: 15, weight: .bold).monospacedDigit())
                         .contentTransition(.numericText())
-                } icon: {
-                    Image(systemName: "link")
                 }
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Color.inkSoft)
 
                 Spacer()
 
                 Button {
                     withAnimation(.snappy) { game.hint() }
                 } label: {
-                    Label("Reveal a letter", systemImage: "lightbulb")
+                    Text("Reveal a letter")
                         .font(.system(size: 14, weight: .semibold))
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .overlay(Capsule().stroke(Color.ink, lineWidth: 1.2))
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 9)
+                        .overlay(Capsule().stroke(Color.ink, lineWidth: 1))
                 }
                 .foregroundStyle(Color.ink)
             }
@@ -249,18 +247,9 @@ struct WordRow: View {
         }
         .padding(6)
         .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(selected ? Color.amber.opacity(0.18) : Color.clear)
+            RoundedRectangle(cornerRadius: 4)
+                .fill(selected ? Color.amber.opacity(0.22) : Color.clear)
         )
-        .overlay(alignment: .leading) {
-            if selected {
-                Image(systemName: "arrowtriangle.right.fill")
-                    .font(.system(size: 11))
-                    .foregroundStyle(Color.ink)
-                    .offset(x: -14)
-                    .transition(.opacity)
-            }
-        }
         .contentShape(Rectangle())
     }
 
@@ -300,13 +289,13 @@ struct TileView: View {
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: size * 0.16)
+            RoundedRectangle(cornerRadius: size * 0.08)
                 .fill(fill)
-            RoundedRectangle(cornerRadius: size * 0.16)
+            RoundedRectangle(cornerRadius: size * 0.08)
                 .strokeBorder(border, lineWidth: borderWidth)
             if let letter {
                 Text(String(letter))
-                    .font(.system(size: size * 0.52, weight: .bold, design: .rounded))
+                    .font(.system(size: size * 0.54, weight: .bold))
                     .foregroundStyle(textColor)
                     .transition(.scale(scale: 0.6).combined(with: .opacity))
             }

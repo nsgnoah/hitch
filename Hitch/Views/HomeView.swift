@@ -17,51 +17,62 @@ struct HomeView: View {
     var body: some View {
         NavigationStack(path: $path) {
             VStack(spacing: 0) {
+                HStack(spacing: 4) {
+                    Spacer()
+                    Button { showStats = true } label: {
+                        Image(systemName: "chart.bar")
+                            .frame(width: 44, height: 44)
+                    }
+                    .accessibilityLabel("Statistics")
+                    Button { showHelp = true } label: {
+                        Image(systemName: "questionmark.circle")
+                            .frame(width: 44, height: 44)
+                    }
+                    .accessibilityLabel("How to play")
+                }
+                .font(.system(size: 19))
+                .padding(.horizontal, 12)
+
                 Spacer()
 
-                LinkMark()
-                    .frame(width: 92, height: 60)
-                    .padding(.bottom, 20)
+                LinkMark(back: .cream, front: .amber)
+                    .frame(width: 84, height: 56)
+                    .padding(.bottom, 22)
 
                 Text("Hitch")
-                    .font(.serif(52))
-                    .foregroundStyle(Color.ink)
+                    .font(.serif(58))
 
-                Text("Link the words, top to bottom.")
-                    .font(.serif(20, weight: .regular))
-                    .foregroundStyle(Color.inkSoft)
-                    .padding(.top, 4)
+                Text("Link seven words,\ntop to bottom.")
+                    .font(.serif(21, weight: .regular))
+                    .multilineTextAlignment(.center)
+                    .opacity(0.85)
+                    .padding(.top, 6)
 
                 Spacer()
 
                 VStack(spacing: 12) {
                     Button(playLabel) { path.append(.play(today.number)) }
-                        .buttonStyle(PillButtonStyle())
+                        .buttonStyle(SplashButtonStyle(filled: true))
                     Button("Archive") { path.append(.archive) }
-                        .buttonStyle(PillButtonStyle(filled: false))
-                    HStack(spacing: 12) {
-                        Button("How to Play") { showHelp = true }
-                            .buttonStyle(PillButtonStyle(filled: false))
-                        Button("Stats") { showStats = true }
-                            .buttonStyle(PillButtonStyle(filled: false))
-                    }
+                        .buttonStyle(SplashButtonStyle(filled: false))
                 }
-                .frame(maxWidth: 320)
+                .frame(maxWidth: 240)
 
                 VStack(spacing: 2) {
-                    Text(today.date.formatted(.dateTime.weekday(.wide).month(.wide).day().year()))
+                    Text(today.date.formatted(.dateTime.month(.wide).day().year()))
                         .font(.system(size: 15, weight: .semibold))
                     Text("No. \(today.number)")
                         .font(.system(size: 15))
+                        .opacity(0.8)
                 }
-                .foregroundStyle(Color.ink)
                 .padding(.top, 28)
 
                 Spacer()
             }
-            .padding(.horizontal, 24)
+            .foregroundStyle(Color.cream)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.paper)
+            .background(Color.splash)
+            .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .play(let n): GameView(puzzle: PuzzleBook.puzzle(n))
@@ -88,7 +99,8 @@ struct HomeView: View {
 
 /// Two interlocking chain links.
 struct LinkMark: View {
-    var color: Color = .pine
+    var back: Color = .ink
+    var front: Color = .pine
 
     var body: some View {
         GeometryReader { geo in
@@ -97,11 +109,11 @@ struct LinkMark: View {
             let line = geo.size.height * 0.13
             ZStack {
                 RoundedRectangle(cornerRadius: h / 2)
-                    .stroke(Color.ink, lineWidth: line)
+                    .stroke(back, lineWidth: line)
                     .frame(width: w, height: h)
                     .offset(x: -geo.size.width * 0.19, y: -geo.size.height * 0.1)
                 RoundedRectangle(cornerRadius: h / 2)
-                    .stroke(color, lineWidth: line)
+                    .stroke(front, lineWidth: line)
                     .frame(width: w, height: h)
                     .offset(x: geo.size.width * 0.19, y: geo.size.height * 0.1)
             }

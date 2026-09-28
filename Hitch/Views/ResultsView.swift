@@ -2,56 +2,60 @@ import SwiftUI
 
 struct ResultsView: View {
     let game: Game
+    @Environment(ProgressStore.self) private var store
     @Environment(\.dismiss) private var dismiss
 
     private var record: PuzzleRecord { game.record }
+    private var words: [String] { game.words }
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 22) {
-                HStack {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(alignment: .firstTextBaseline) {
+                    Eyebrow("Hitch No. \(game.puzzle.number) · \(game.puzzle.date.formatted(.dateTime.month(.wide).day()))")
                     Spacer()
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.system(size: 15, weight: .semibold))
                             .frame(width: 44, height: 44)
                     }
-                    .foregroundStyle(Color.ink)
+                    .offset(x: 12)
                 }
+                .padding(.top, 8)
 
-                LinkMark().frame(width: 70, height: 46)
+                Text(headline)
+                    .font(.serif(38))
+                    .padding(.top, 12)
 
-                VStack(spacing: 6) {
-                    Text(headline)
-                        .font(.serif(34))
-                    Text(subhead)
-                        .font(.system(size: 16))
-                        .foregroundStyle(Color.inkSoft)
-                }
-                .multilineTextAlignment(.center)
+                ResultSquares(record: record, size: 22)
+                    .padding(.top, 14)
 
-                Text(record.emojiRow)
-                    .font(.system(size: 30))
-                    .tracking(4)
+                statsRow
+                    .padding(.vertical, 16)
+                    .overlay(alignment: .top) { Rule() }
+                    .overlay(alignment: .bottom) { Rule() }
+                    .padding(.top, 28)
 
-                chain
+                Eyebrow("The chain")
+                    .padding(.top, 28)
+                    .padding(.bottom, 14)
+
+                ladder
 
                 ShareLink(item: game.shareText) {
-                    Label("Share", systemImage: "square.and.arrow.up")
+                    Text("Share")
                 }
                 .buttonStyle(PillButtonStyle())
-                .frame(maxWidth: 320)
+                .padding(.top, 32)
 
                 if game.puzzle.number == PuzzleBook.todayNumber {
                     TimelineView(.periodic(from: .now, by: 1)) { ctx in
-                        VStack(spacing: 2) {
-                            Text("Next chain in")
-                                .font(.system(size: 13, weight: .medium))
-                                .foregroundStyle(Color.inkSoft)
-                            Text(countdown(from: ctx.date))
-                                .font(.system(size: 22, weight: .semibold).monospacedDigit())
-                        }
+                        Text("Next chain in \(countdown(from: ctx.date))")
+                            .font(.system(size: 14).monospacedDigit())
+                            .foregroundStyle(Color.inkSoft)
+                            .frame(maxWidth: .infinity)
                     }
+                    .padding(.top, 14)
                 }
             }
             .padding(.horizontal, 24)
@@ -61,55 +65,122 @@ struct ResultsView: View {
         .background(Color.paper)
     }
 
-    private var chain: some View {
-        let words = game.words
-        let middle = Array(1..<(words.count - 1))
-        return VStack(spacing: 0) {
-            ForEach(middle, id: \.self) { i in
-                HStack(alignment: .center) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(words[i])
-                            .font(.system(size: 17, weight: .bold, design: .rounded))
-                        Text("\(words[i - 1]) \(words[i]) · \(words[i]) \(words[i + 1])".lowercased())
-                            .font(.system(size: 13))
-                            .foregroundStyle(Color.inkSoft)
-                    }
-                    Spacer()
-                    marker(for: i)
-                }
-                .padding(.vertical, 10)
-                .padding(.horizontal, 14)
-                if i != middle.last { Divider().overlay(Color.rule) }
-            }
+    private var statsRow: some View {
+        HStack(alignment: .top, spacing: 0) {
+            stat(store.playedCount, "Played")
+            stat(store.perfectCount, "Perfect")
+            stat(store.currentStreak, "Streak")
+            stat(store.longestStreak, "Best")
         }
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color.card))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.rule))
     }
 
-    private func marker(for i: Int) -> some View {
-        let extra = max(0, record.revealed[i] - 1)
-        return Text(record.given[i] ? "given" : extra == 0 ? "clean" : "+\(extra)")
-            .font(.system(size: 12, weight: .bold))
-            .foregroundStyle(record.given[i] ? Color.brick : extra == 0 ? Color.pine : Color.ember)
+    private func stat(_ value: Int, _ label: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("\(value)").font(.serif(28, weight: .regular))
+            Text(label).font(.system(size: 12)).foregroundStyle(Color.inkSoft)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// The finished chain, word by word, with each link spelled out between.
+    private var ladder: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(words.indices, id: \.self) { i in
+                HStack(spacing: 12) {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(color(for: i))
+                        .frame(width: 14, height: 14)
+                    Text(words[i])
+                        .font(.system(size: 17, weight: .bold))
+                        .tracking(1.5)
+                    Spacer()
+                    Text(note(for: i))
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color.inkSoft)
+                }
+                if i < words.count - 1 {
+                    HStack(spacing: 18) {
+                        Rectangle()
+                            .fill(Color.rule)
+                            .frame(width: 2, height: 24)
+                            .padding(.leading, 6)
+                        Text("\(words[i]) \(words[i + 1])".lowercased())
+                            .font(.serif(14, weight: .regular).italic())
+                            .foregroundStyle(Color.inkSoft)
+                    }
+                    .padding(.vertical, 3)
+                }
+            }
+        }
+    }
+
+    private func color(for i: Int) -> Color {
+        guard i > 0, i < words.count - 1 else { return .ink }
+        if record.given[i] { return .stone }
+        switch record.revealed[i] - 1 {
+        case ...0: return .pine
+        case 1: return .amber
+        default: return .ember
+        }
+    }
+
+    private func note(for i: Int) -> String {
+        guard i > 0, i < words.count - 1 else { return "" }
+        if record.given[i] { return "revealed" }
+        let extra = record.revealed[i] - 1
+        return extra > 0 ? "+\(extra)" : ""
     }
 
     private var headline: String {
-        switch record.totalExtra {
-        case 0: "Perfect!"
-        case 1...2: "Splendid!"
-        case 3...5: "Nicely done"
-        case 6...9: "Hitched!"
-        default: "You made it"
-        }
-    }
-
-    private var subhead: String {
         let n = record.totalExtra
-        return n == 0 ? "Every link, first letter only." : "Solved with \(n) extra letter\(n == 1 ? "" : "s")."
+        return n == 0 ? "A perfect chain." : "\(n) extra letter\(n == 1 ? "" : "s")."
     }
 
     private func countdown(from now: Date) -> String {
         let s = max(0, Int(PuzzleBook.nextPuzzleDate.timeIntervalSince(now)))
-        return String(format: "%02d:%02d:%02d", s / 3600, (s % 3600) / 60, s % 60)
+        return String(format: "%d:%02d:%02d", s / 3600, (s % 3600) / 60, s % 60)
+    }
+}
+
+/// Flat result squares, one per hidden word. Matches the share text.
+struct ResultSquares: View {
+    let record: PuzzleRecord
+    var size: CGFloat = 12
+
+    var body: some View {
+        HStack(spacing: size * 0.25) {
+            ForEach(Array(record.revealed.indices.dropFirst().dropLast()), id: \.self) { i in
+                RoundedRectangle(cornerRadius: size * 0.12)
+                    .fill(color(i))
+                    .frame(width: size, height: size)
+            }
+        }
+    }
+
+    private func color(_ i: Int) -> Color {
+        if record.given[i] { return .stone }
+        switch record.revealed[i] - 1 {
+        case ...0: return .pine
+        case 1: return .amber
+        default: return .ember
+        }
+    }
+}
+
+struct Eyebrow: View {
+    let text: String
+    init(_ text: String) { self.text = text }
+
+    var body: some View {
+        Text(text.uppercased())
+            .font(.system(size: 12, weight: .semibold))
+            .tracking(1.2)
+            .foregroundStyle(Color.inkSoft)
+    }
+}
+
+struct Rule: View {
+    var body: some View {
+        Rectangle().fill(Color.rule).frame(height: 1)
     }
 }

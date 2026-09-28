@@ -152,7 +152,7 @@ final class Game {
 
     var shareText: String {
         let hints = record.totalExtra
-        let summary = hints == 0 ? "Perfect chain!" : "\(hints) extra letter\(hints == 1 ? "" : "s")"
-        return "Hitch #\(puzzle.number)\n🔗 \(summary)\n\(record.emojiRow)"
+        let summary = hints == 0 ? "Perfect chain" : "\(hints) extra letter\(hints == 1 ? "" : "s")"
+        return "Hitch No. \(puzzle.number)\n\(record.emojiRow)\n\(summary)"
     }
 }

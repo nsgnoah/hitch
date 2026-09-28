@@ -33,7 +33,7 @@ struct PuzzleRecord: Codable, Equatable {
     /// One square per middle word, for sharing.
     var emojiRow: String {
         revealed.indices.dropFirst().dropLast().map { i -> String in
-            if given[i] { return "🟥" }
+            if given[i] { return "⬛" }
             switch max(0, revealed[i] - 1) {
             case 0: return "🟩"
             case 1: return "🟨"
