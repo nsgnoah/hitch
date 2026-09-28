@@ -7,67 +7,23 @@ enum Route: Hashable {
 
 struct HomeView: View {
     @Environment(ProgressStore.self) private var store
+    @Environment(\.scenePhase) private var scenePhase
     @State private var path: [Route] = []
     @State private var showHelp = false
     @State private var showStats = false
+    /// Today's puzzle number. Refreshed at midnight and whenever the app comes back to the foreground.
+    @State private var day = PuzzleBook.todayNumber
     @AppStorage("hitch.seenHelp") private var seenHelp = false
 
-    private var today: Puzzle { PuzzleBook.today }
+    private var today: Puzzle { PuzzleBook.puzzle(day) }
 
     var body: some View {
         NavigationStack(path: $path) {
-            VStack(spacing: 0) {
-                HStack(spacing: 4) {
-                    Spacer()
-                    Button { showStats = true } label: {
-                        Image(systemName: "chart.bar")
-                            .frame(width: 44, height: 44)
-                    }
-                    .accessibilityLabel("Statistics")
-                    Button { showHelp = true } label: {
-                        Image(systemName: "questionmark.circle")
-                            .frame(width: 44, height: 44)
-                    }
-                    .accessibilityLabel("How to play")
-                }
-                .font(.system(size: 19))
-                .padding(.trailing, -12)
-
-                Spacer()
-
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("No. \(today.number) · \(today.date.formatted(.dateTime.weekday(.wide).month(.wide).day()))".uppercased())
-                        .font(.system(size: 12, weight: .semibold))
-                        .tracking(1.2)
-                        .opacity(0.75)
-
-                    Text("Hitch")
-                        .font(.serif(72))
-                        .padding(.top, 2)
-
-                    Text("Link seven words, top to bottom.")
-                        .font(.serif(19, weight: .regular))
-                        .opacity(0.85)
-
-                    ChainTeaser(puzzle: today, record: store.record(for: today))
-                        .padding(.top, 36)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                Spacer()
-
-                Button(playLabel) { path.append(.play(today.number)) }
-                    .buttonStyle(SplashButtonStyle(filled: true))
-
-                Button("Archive") { path.append(.archive) }
-                    .font(.system(size: 16, weight: .semibold))
-                    .underline(true, color: Color.cream.opacity(0.5))
-                    .frame(maxWidth: .infinity, minHeight: 44)
-                    .padding(.top, 10)
-                    .padding(.bottom, 12)
+            // Scrolls only when the window is too short for it, like a small iPad window or large text.
+            ViewThatFits(in: .vertical) {
+                splash
+                ScrollView { splash.padding(.vertical, 12) }
             }
-            .padding(.horizontal, 28)
-            .frame(maxWidth: 480)
             .foregroundStyle(Color.cream)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.splash)
@@ -87,6 +43,72 @@ struct HomeView: View {
                 showHelp = true
             }
         }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { day = PuzzleBook.todayNumber }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+            day = PuzzleBook.todayNumber
+        }
+    }
+
+    private var splash: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 4) {
+                Spacer()
+                Button { showStats = true } label: {
+                    Image(systemName: "chart.bar")
+                        .frame(width: 44, height: 44)
+                }
+                .accessibilityLabel("Statistics")
+                Button { showHelp = true } label: {
+                    Image(systemName: "questionmark.circle")
+                        .frame(width: 44, height: 44)
+                }
+                .accessibilityLabel("How to play")
+            }
+            .scaledFont(19)
+            .padding(.trailing, -12)
+
+            Spacer()
+
+            VStack(alignment: .leading, spacing: 0) {
+                Text("No. \(today.number) · \(today.date.formatted(.dateTime.weekday(.wide).month(.wide).day()))".uppercased())
+                    .scaledFont(12, weight: .semibold, relativeTo: .caption)
+                    .tracking(1.2)
+                    .opacity(0.9)
+
+                Text("Hitch")
+                    .serifFont(72, relativeTo: .largeTitle)
+                    .padding(.top, 2)
+                    .accessibilityAddTraits(.isHeader)
+
+                Text("Link seven words, top to bottom.")
+                    .serifFont(19, weight: .regular, relativeTo: .title3)
+                    .opacity(0.85)
+
+                ChainTeaser(puzzle: today, record: store.record(for: today))
+                    .padding(.top, 36)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Spacer()
+
+            Button(playLabel) { path.append(.play(today.number)) }
+                .buttonStyle(SplashButtonStyle(filled: true))
+
+            Button { path.append(.archive) } label: {
+                Text("Archive")
+                    .underline(true, color: Color.cream.opacity(0.5))
+                    .scaledFont(16, weight: .semibold)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .contentShape(Rectangle())
+            }
+            .padding(.top, 10)
+            .padding(.bottom, 12)
+        }
+        .padding(.horizontal, 28)
+        .frame(maxWidth: 480)
+        .frame(maxWidth: .infinity)
     }
 
     private var playLabel: String {
@@ -152,9 +174,18 @@ struct ChainTeaser: View {
                 .frame(height: 22)
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityText)
     }
 
     private func shown(_ i: Int) -> Bool {
         i == 0 || i == puzzle.words.count - 1 || record.solved[i]
+    }
+
+    private var accessibilityText: String {
+        let words = puzzle.words
+        let hidden = words.count - 2
+        let solved = (1..<words.count - 1).filter { record.solved[$0] }.count
+        return "Today's chain, from \(words[0]) to \(words[words.count - 1]). \(solved) of \(hidden) words solved."
     }
 }

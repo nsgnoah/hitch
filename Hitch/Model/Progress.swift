@@ -83,10 +83,11 @@ final class ProgressStore {
 
     /// Consecutive daily puzzles finished, ending today (or yesterday, if today isn't done yet).
     var currentStreak: Int {
+        let done = Set(finished.keys)
         var n = PuzzleBook.todayNumber
-        if finished[n] == nil { n -= 1 }
+        if !done.contains(n) { n -= 1 }
         var streak = 0
-        while n >= 1, finished[n] != nil {
+        while n >= 1, done.contains(n) {
             streak += 1
             n -= 1
         }
@@ -94,9 +95,10 @@ final class ProgressStore {
     }
 
     var longestStreak: Int {
+        let done = Set(finished.keys)
         var best = 0, run = 0
         for n in 1...max(1, PuzzleBook.todayNumber) {
-            run = finished[n] != nil ? run + 1 : 0
+            run = done.contains(n) ? run + 1 : 0
             best = max(best, run)
         }
         return best

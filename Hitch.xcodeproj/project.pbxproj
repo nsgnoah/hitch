@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0230BD307048DE91CA009345 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = ED6979C45113CF3597493804 /* PrivacyInfo.xcprivacy */; };
 		10E1896C45168CAA3F8659B1 /* PuzzleBook.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1B1811F6708DE0C3AB95C76 /* PuzzleBook.swift */; };
 		2B582423D094FDE57AA18548 /* InfoViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18371F14E453C4BED2F2E92C /* InfoViews.swift */; };
 		345FE9C2341C1254EA53A565 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC5FE6F80E2A7560EF599DA5 /* HomeView.swift */; };
@@ -27,12 +28,14 @@
 		35FE492D4D517B6A73648DB8 /* chains.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = chains.json; sourceTree = "<group>"; };
 		36C4BFDBE8C1AAFE91A96F12 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		77F0000F70C90300A552E610 /* ResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultsView.swift; sourceTree = "<group>"; };
+		8CD489412A14A78579B74AA5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B1B1811F6708DE0C3AB95C76 /* PuzzleBook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleBook.swift; sourceTree = "<group>"; };
 		B70813052F2F3096AA5FC081 /* HitchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HitchApp.swift; sourceTree = "<group>"; };
 		D2E0E4647ACC6D161223BD54 /* Game.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game.swift; sourceTree = "<group>"; };
 		D66B2A3D9DAF526D3D8674D3 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		DDB3536527AD2DD2F0AC2C1D /* KeyCatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCatcher.swift; sourceTree = "<group>"; };
 		E0F12D39CA942D407A430D43 /* Progress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Progress.swift; sourceTree = "<group>"; };
+		ED6979C45113CF3597493804 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		F38A01B0E738689676F12171 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
 		FC5FE6F80E2A7560EF599DA5 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -69,6 +72,8 @@
 			children = (
 				36C4BFDBE8C1AAFE91A96F12 /* Assets.xcassets */,
 				B70813052F2F3096AA5FC081 /* HitchApp.swift */,
+				8CD489412A14A78579B74AA5 /* Info.plist */,
+				ED6979C45113CF3597493804 /* PrivacyInfo.xcprivacy */,
 				188615CDE33536EFEA9D89F6 /* Model */,
 				27FC9843DF3A60705D4539BE /* Resources */,
 				9B5FFB7D42436C0B96FD1531 /* Views */,
@@ -158,6 +163,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D21A8DE8F7FC87933288F034 /* Assets.xcassets in Resources */,
+				0230BD307048DE91CA009345 /* PrivacyInfo.xcprivacy in Resources */,
 				9C11EAD82887C2CB1A10C1AC /* chains.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -194,11 +200,12 @@
 				DEVELOPMENT_TEAM = S6QW7SV228;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Hitch/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Hitch;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.word-games";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -245,7 +252,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -278,11 +285,12 @@
 				DEVELOPMENT_TEAM = S6QW7SV228;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Hitch/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Hitch;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.word-games";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -329,7 +337,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;

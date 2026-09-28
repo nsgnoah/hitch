@@ -10,8 +10,16 @@ struct Puzzle: Identifiable, Hashable {
 
 /// The bundled set of chains, handed out one per calendar day.
 enum PuzzleBook {
+    /// Day math runs on the Gregorian calendar in the device's current time zone, whatever
+    /// calendar the user has chosen for display (Buddhist, Persian, Japanese…).
+    private static var calendar: Calendar {
+        var c = Calendar(identifier: .gregorian)
+        c.timeZone = .autoupdatingCurrent
+        return c
+    }
+
     /// Puzzle #1. Backdated so there's an archive to play from day one.
-    static let launch: Date = Calendar.current.date(from: DateComponents(year: 2026, month: 9, day: 1))!
+    static var launch: Date { calendar.date(from: DateComponents(year: 2026, month: 9, day: 1))! }
 
     static let chains: [[String]] = {
         struct Entry: Decodable { let words: [String] }
@@ -24,7 +32,7 @@ enum PuzzleBook {
     }()
 
     static func number(for date: Date) -> Int {
-        let cal = Calendar.current
+        let cal = calendar
         let days = cal.dateComponents([.day], from: cal.startOfDay(for: launch), to: cal.startOfDay(for: date)).day ?? 0
         return max(1, days + 1)
     }
@@ -32,7 +40,7 @@ enum PuzzleBook {
     static var todayNumber: Int { number(for: .now) }
 
     static func date(for number: Int) -> Date {
-        Calendar.current.date(byAdding: .day, value: number - 1, to: launch)!
+        calendar.date(byAdding: .day, value: number - 1, to: launch)!
     }
 
     static func puzzle(_ number: Int) -> Puzzle {
@@ -43,6 +51,7 @@ enum PuzzleBook {
     static var today: Puzzle { puzzle(todayNumber) }
 
     static var nextPuzzleDate: Date {
-        Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: .now))!
+        let cal = calendar
+        return cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: .now))!
     }
 }

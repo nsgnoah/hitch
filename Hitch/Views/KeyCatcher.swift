@@ -9,6 +9,8 @@ struct KeyCatcher: UIViewRepresentable {
     let onLetter: (Character) -> Void
     let onDelete: () -> Void
     let onEnter: () -> Void
+    /// Tab or an arrow key on a hardware keyboard: jump to the other end of the chain.
+    let onSwitch: () -> Void
 
     func makeUIView(context: Context) -> KeyInputView {
         KeyInputView()
@@ -18,6 +20,7 @@ struct KeyCatcher: UIViewRepresentable {
         view.onLetter = onLetter
         view.onDelete = onDelete
         view.onEnter = onEnter
+        view.onSwitch = onSwitch
 
         let refocus = context.coordinator.lastToken != focusToken
         context.coordinator.lastToken = focusToken
@@ -41,6 +44,7 @@ final class KeyInputView: UIView, UIKeyInput {
     var onLetter: (Character) -> Void = { _ in }
     var onDelete: () -> Void = {}
     var onEnter: () -> Void = {}
+    var onSwitch: () -> Void = {}
 
     // Keyboard traits: plain capitals, no autocorrect or suggestions.
     var keyboardType: UIKeyboardType = .asciiCapable
@@ -58,6 +62,21 @@ final class KeyInputView: UIView, UIKeyInput {
         item.leadingBarButtonGroups = []
         item.trailingBarButtonGroups = []
         return item
+    }
+
+    override var keyCommands: [UIKeyCommand]? {
+        let keys: [(String, UIKeyModifierFlags)] = [
+            ("\t", []), ("\t", .shift), (UIKeyCommand.inputUpArrow, []), (UIKeyCommand.inputDownArrow, []),
+        ]
+        return keys.map { input, flags in
+            let command = UIKeyCommand(input: input, modifierFlags: flags, action: #selector(switchWord))
+            command.wantsPriorityOverSystemBehavior = true
+            return command
+        }
+    }
+
+    @objc private func switchWord() {
+        onSwitch()
     }
 
     /// Always true so the delete key stays enabled.

@@ -78,6 +78,12 @@ final class Game {
         typed = []
     }
 
+    /// Moves the keyboard to the other open end of the chain, if there is one.
+    func switchWord() {
+        guard let top = topFrontier, let bottom = bottomFrontier, top != bottom else { return }
+        select(selected == top ? bottom : top)
+    }
+
     func type(_ c: Character) {
         guard let i = selected, !isFinished else { return }
         let room = words[i].count - record.revealed[i]

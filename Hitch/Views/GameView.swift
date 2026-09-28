@@ -6,7 +6,6 @@ struct GameView: View {
     @State private var showHelp = false
     /// Bumped to bring the keyboard back after the player dismisses it.
     @State private var focusToken = 0
-    @Environment(\.dismiss) private var dismiss
 
     init(puzzle: Puzzle) {
         _game = State(initialValue: Game(puzzle: puzzle))
@@ -14,8 +13,6 @@ struct GameView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
-
             GeometryReader { geo in
                 ChainBoard(game: game, size: geo.size)
                     .frame(width: geo.size.width, height: geo.size.height)
@@ -38,16 +35,50 @@ struct GameView: View {
                 focusToken: focusToken,
                 onLetter: { c in withAnimation(.snappy(duration: 0.12)) { game.type(c) } },
                 onDelete: { game.backspace() },
-                onEnter: { withAnimation(.snappy) { game.submit() } }
+                onEnter: { withAnimation(.snappy) { game.submit() } },
+                onSwitch: { withAnimation(.snappy) { game.switchWord() } }
             )
             .frame(width: 1, height: 1)
+            .accessibilityHidden(true)
         )
-        .toolbar(.hidden, for: .navigationBar)
+        // The board sizes its own type; keep the chrome around it from crowding it out.
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+        .navigationTitle("Hitch No. \(game.puzzle.number)")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                VStack(spacing: 0) {
+                    Text("Hitch")
+                        .serifFont(22, relativeTo: .headline)
+                    Text("No. \(game.puzzle.number) · \(game.puzzle.date.formatted(.dateTime.month(.abbreviated).day()))")
+                        .scaledFont(12, weight: .medium, relativeTo: .caption)
+                        .foregroundStyle(Color.inkSoft)
+                }
+                .foregroundStyle(Color.ink)
+                .accessibilityElement(children: .combine)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button { showHelp = true } label: {
+                    Image(systemName: "questionmark.circle")
+                }
+                .accessibilityLabel("How to play")
+            }
+        }
         .onAppear {
             if game.isFinished { showResults = true }
         }
         .sensoryFeedback(.error, trigger: game.wrongCount)
         .sensoryFeedback(.success, trigger: game.solveCount)
+        .onChange(of: game.wrongCount) { _, _ in
+            // A wrong guess that shows the last letter finishes the word; the solve announcement covers it.
+            guard let i = game.lastWrong, !game.record.solved[i] else { return }
+            AccessibilityNotification.Announcement("Not quite. One more letter shown.").post()
+        }
+        .onChange(of: game.solveCount) { _, _ in
+            guard let i = game.lastSolved else { return }
+            let word = game.words[i]
+            AccessibilityNotification.Announcement(game.record.given[i] ? "\(word), revealed" : "\(word), solved").post()
+        }
         .onChange(of: game.isFinished) { _, done in
             if done {
                 Task {
@@ -63,41 +94,16 @@ struct GameView: View {
         .sheet(isPresented: $showHelp) { HowToPlayView() }
     }
 
-    private var header: some View {
-        HStack {
-            Button { dismiss() } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 18, weight: .semibold))
-                    .frame(width: 44, height: 44)
-            }
-            Spacer()
-            VStack(spacing: 0) {
-                Text("Hitch")
-                    .font(.serif(22))
-                Text("No. \(game.puzzle.number) · \(game.puzzle.date.formatted(.dateTime.month(.abbreviated).day()))")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.inkSoft)
-            }
-            Spacer()
-            Button { showHelp = true } label: {
-                Image(systemName: "questionmark.circle")
-                    .font(.system(size: 20))
-                    .frame(width: 44, height: 44)
-            }
-        }
-        .foregroundStyle(Color.ink)
-        .padding(.horizontal, 8)
-        .overlay(alignment: .bottom) { Rectangle().fill(Color.rule).frame(height: 1) }
-    }
-
     private var controls: some View {
         HStack {
             HStack(spacing: 8) {
                 Eyebrow("Extra letters")
                 Text("\(game.record.totalExtra)")
-                    .font(.system(size: 15, weight: .bold).monospacedDigit())
+                    .scaledFont(15, weight: .bold)
+                    .monospacedDigit()
                     .contentTransition(.numericText())
             }
+            .accessibilityElement(children: .combine)
 
             Spacer()
 
@@ -105,11 +111,12 @@ struct GameView: View {
                 withAnimation(.snappy) { game.hint() }
             } label: {
                 Text("Reveal a letter")
-                    .font(.system(size: 15, weight: .semibold))
                     .underline(true, color: Color.ember)
+                    .scaledFont(15, weight: .semibold)
                     .frame(minHeight: 44)
             }
             .foregroundStyle(Color.ink)
+            .keyboardShortcut("r", modifiers: .command)
         }
         .frame(maxWidth: 600)
         .padding(.horizontal, 20)
@@ -184,6 +191,7 @@ struct LinkRow: View {
     let phrase: String
     let done: Bool
     let fontSize: CGFloat
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         HStack(spacing: 0) {
@@ -193,7 +201,7 @@ struct LinkRow: View {
                 Text(phrase.lowercased())
                     .font(.serif(fontSize, weight: .regular).italic())
                     .foregroundStyle(Color.inkSoft)
-                    .transition(.opacity.combined(with: .offset(x: -6)))
+                    .transition(reduceMotion ? .opacity : .opacity.combined(with: .offset(x: -6)))
             }
             Spacer(minLength: 0)
         }
@@ -204,6 +212,7 @@ struct LinkRow: View {
 struct Knot: View {
     let state: SlotState
     let selected: Bool
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var withoutColor
 
     var body: some View {
         switch state {
@@ -212,7 +221,11 @@ struct Knot: View {
         case .solved:
             Circle().fill(Color.pine).frame(width: 12, height: 12)
         case .given:
-            Circle().fill(Color.stone).frame(width: 12, height: 12)
+            if withoutColor {
+                Circle().strokeBorder(Color.stone, lineWidth: 2.5).frame(width: 12, height: 12)
+            } else {
+                Circle().fill(Color.stone).frame(width: 12, height: 12)
+            }
         case .active:
             Circle()
                 .fill(selected ? Color.ember : Color.paper)
@@ -233,6 +246,9 @@ struct WordRow: View {
 
     @State private var shake: CGFloat = 0
     @State private var hop = 0
+    /// Stands in for the shake when Reduce Motion is on.
+    @State private var flash = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         let state = game.state(index)
@@ -274,20 +290,30 @@ struct WordRow: View {
             }
             .frame(maxHeight: .infinity)
             .background(selected ? Color.amber.opacity(0.16) : Color.clear)
+            .background(Color.ember.opacity(flash ? 0.22 : 0))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .onChange(of: game.wrongCount) { _, _ in
             guard game.lastWrong == index else { return }
-            withAnimation(.linear(duration: 0.4)) { shake += 1 }
+            if reduceMotion {
+                withAnimation(.easeIn(duration: 0.1)) { flash = true }
+                Task {
+                    try? await Task.sleep(for: .milliseconds(350))
+                    withAnimation(.easeOut(duration: 0.5)) { flash = false }
+                }
+            } else {
+                withAnimation(.linear(duration: 0.4)) { shake += 1 }
+            }
         }
         .onChange(of: game.solveCount) { _, _ in
-            guard game.lastSolved == index else { return }
+            guard game.lastSolved == index, !reduceMotion else { return }
             hop += 1
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityText(state: state))
         .accessibilityAddTraits(state == .active ? .isButton : [])
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
     private func letterSlot(pos: Int, state: SlotState, selected: Bool) -> some View {
@@ -301,7 +327,7 @@ struct WordRow: View {
                     .foregroundStyle(color(pos: pos, state: state))
                     .fixedSize()
                     .padding(.bottom, slot * 0.1)
-                    .transition(.opacity.combined(with: .scale(scale: 0.7)))
+                    .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.7)))
             }
             if open {
                 Rectangle()
@@ -337,11 +363,13 @@ struct WordRow: View {
     private func accessibilityText(state: SlotState) -> String {
         let word = game.words[index]
         switch state {
-        case .anchor, .solved, .given: return word
+        case .anchor: return word
+        case .solved: return "\(word), solved"
+        case .given: return "\(word), revealed"
         case .locked: return "Hidden word, \(word.count) letters"
         case .active:
-            let shown = word.prefix(game.revealed(index))
-            return "Word \(index + 1), \(word.count) letters, starts with \(shown.map(String.init).joined(separator: " "))"
+            let letters = (0..<word.count).map { game.letter(index, $0).map(String.init) ?? "blank" }
+            return "Word \(index + 1), \(word.count) letters: \(letters.joined(separator: ", "))"
         }
     }
 }
