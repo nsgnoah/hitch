@@ -29,6 +29,16 @@ final class Game {
         refreshFrontier(preferTop: true)
     }
 
+    /// A game frozen at a given state, for illustrations.
+    init(example words: [String], revealed: [Int], solved: [Bool], selected: Int?) {
+        puzzle = Puzzle(number: 0, date: .now, words: words)
+        store = ProgressStore(persistent: false)
+        record = PuzzleRecord(words: words)
+        record.revealed = revealed
+        record.solved = solved
+        self.selected = selected
+    }
+
     var words: [String] { puzzle.words }
     var isFinished: Bool { record.isFinished }
 

@@ -33,11 +33,11 @@ struct PuzzleRecord: Codable, Equatable {
     /// One square per middle word, for sharing.
     var emojiRow: String {
         revealed.indices.dropFirst().dropLast().map { i -> String in
-            if given[i] { return "⬛" }
+            if given[i] { return "⚫" }
             switch max(0, revealed[i] - 1) {
-            case 0: return "🟩"
-            case 1: return "🟨"
-            default: return "🟧"
+            case 0: return "🟢"
+            case 1: return "🟡"
+            default: return "🟠"
             }
         }.joined()
     }
@@ -50,9 +50,12 @@ final class ProgressStore {
     private(set) var records: [Int: PuzzleRecord] = [:]
     private let defaults = UserDefaults.standard
     private let key = "hitch.records.v1"
+    private let persistent: Bool
 
-    init() {
-        if let data = defaults.data(forKey: key),
+    /// A non-persistent store is for examples; it neither loads nor saves.
+    init(persistent: Bool = true) {
+        self.persistent = persistent
+        if persistent, let data = defaults.data(forKey: key),
            let decoded = try? JSONDecoder().decode([Int: PuzzleRecord].self, from: data) {
             records = decoded
         }
@@ -65,7 +68,7 @@ final class ProgressStore {
 
     func save(_ record: PuzzleRecord, for number: Int) {
         records[number] = record
-        if let data = try? JSONEncoder().encode(records) {
+        if persistent, let data = try? JSONEncoder().encode(records) {
             defaults.set(data, forKey: key)
         }
     }

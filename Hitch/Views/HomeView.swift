@@ -31,44 +31,42 @@ struct HomeView: View {
                     .accessibilityLabel("How to play")
                 }
                 .font(.system(size: 19))
-                .padding(.horizontal, 12)
+                .padding(.trailing, -12)
 
                 Spacer()
 
-                LinkMark(back: .cream, front: .amber)
-                    .frame(width: 84, height: 56)
-                    .padding(.bottom, 22)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("No. \(today.number) · \(today.date.formatted(.dateTime.weekday(.wide).month(.wide).day()))".uppercased())
+                        .font(.system(size: 12, weight: .semibold))
+                        .tracking(1.2)
+                        .opacity(0.75)
 
-                Text("Hitch")
-                    .font(.serif(58))
+                    Text("Hitch")
+                        .font(.serif(72))
+                        .padding(.top, 2)
 
-                Text("Link seven words,\ntop to bottom.")
-                    .font(.serif(21, weight: .regular))
-                    .multilineTextAlignment(.center)
-                    .opacity(0.85)
-                    .padding(.top, 6)
+                    Text("Link seven words, top to bottom.")
+                        .font(.serif(19, weight: .regular))
+                        .opacity(0.85)
 
-                Spacer()
-
-                VStack(spacing: 12) {
-                    Button(playLabel) { path.append(.play(today.number)) }
-                        .buttonStyle(SplashButtonStyle(filled: true))
-                    Button("Archive") { path.append(.archive) }
-                        .buttonStyle(SplashButtonStyle(filled: false))
+                    ChainTeaser(puzzle: today, record: store.record(for: today))
+                        .padding(.top, 36)
                 }
-                .frame(maxWidth: 240)
-
-                VStack(spacing: 2) {
-                    Text(today.date.formatted(.dateTime.month(.wide).day().year()))
-                        .font(.system(size: 15, weight: .semibold))
-                    Text("No. \(today.number)")
-                        .font(.system(size: 15))
-                        .opacity(0.8)
-                }
-                .padding(.top, 28)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 Spacer()
+
+                Button(playLabel) { path.append(.play(today.number)) }
+                    .buttonStyle(SplashButtonStyle(filled: true))
+
+                Button("Archive") { path.append(.archive) }
+                    .font(.system(size: 16, weight: .semibold))
+                    .underline(true, color: Color.cream.opacity(0.5))
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .padding(.top, 10)
+                    .padding(.bottom, 12)
             }
+            .padding(.horizontal, 28)
             .foregroundStyle(Color.cream)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.splash)
@@ -120,5 +118,42 @@ struct LinkMark: View {
             .frame(width: geo.size.width, height: geo.size.height)
             .rotationEffect(.degrees(-20))
         }
+    }
+}
+
+/// Today's chain in miniature: the two given words and the blanks between.
+struct ChainTeaser: View {
+    let puzzle: Puzzle
+    let record: PuzzleRecord
+
+    var body: some View {
+        let words = puzzle.words
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(words.indices, id: \.self) { i in
+                if i > 0 {
+                    Rectangle().fill(Color.cream.opacity(0.5)).frame(width: 2, height: 10).padding(.leading, 5)
+                }
+                HStack(spacing: 14) {
+                    Circle()
+                        .fill(Color.cream.opacity(shown(i) ? 1 : 0.5))
+                        .frame(width: shown(i) ? 12 : 7, height: shown(i) ? 12 : 7)
+                        .frame(width: 12)
+                    if shown(i) {
+                        Text(words[i]).font(.serif(18))
+                    } else {
+                        HStack(spacing: 4) {
+                            ForEach(0..<words[i].count, id: \.self) { _ in
+                                Rectangle().fill(Color.cream.opacity(0.45)).frame(width: 11, height: 2)
+                            }
+                        }
+                    }
+                }
+                .frame(height: 22)
+            }
+        }
+    }
+
+    private func shown(_ i: Int) -> Bool {
+        i == 0 || i == puzzle.words.count - 1 || record.solved[i]
     }
 }

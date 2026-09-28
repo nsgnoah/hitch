@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Letters set on a plain band, no key caps.
 struct KeyboardView: View {
     let canSubmit: Bool
     let onLetter: (Character) -> Void
@@ -7,49 +8,48 @@ struct KeyboardView: View {
     let onEnter: () -> Void
 
     private let rows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"]
+    private let keyHeight: CGFloat = 50
 
     var body: some View {
         GeometryReader { geo in
-            let gap: CGFloat = 6
-            let keyWidth = (geo.size.width - gap * 9) / 10
-            VStack(spacing: 8) {
+            let keyWidth = geo.size.width / 10
+            VStack(spacing: 2) {
                 ForEach(rows.indices, id: \.self) { r in
-                    HStack(spacing: gap) {
+                    HStack(spacing: 0) {
                         if r == 2 {
-                            wideKey(width: keyWidth * 1.5 + gap / 2, action: onEnter) {
-                                Text("ENTER").font(.system(size: 12, weight: .bold))
+                            key(width: keyWidth * 1.5, action: onEnter) {
+                                Text("Enter")
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .foregroundStyle(canSubmit ? Color.ember : Color.inkSoft.opacity(0.6))
                             }
-                            .opacity(canSubmit ? 1 : 0.45)
                         }
                         ForEach(Array(rows[r]), id: \.self) { c in
-                            Button { onLetter(c) } label: {
-                                Text(String(c))
-                                    .font(.system(size: 20, weight: .semibold))
-                                    .frame(width: keyWidth, height: 54)
-                                    .background(RoundedRectangle(cornerRadius: 6).fill(Color.key))
+                            key(width: keyWidth, action: { onLetter(c) }) {
+                                Text(String(c)).font(.system(size: 22, weight: .regular))
                             }
-                            .buttonStyle(KeyStyle())
                         }
                         if r == 2 {
-                            wideKey(width: keyWidth * 1.5 + gap / 2, action: onDelete) {
-                                Image(systemName: "delete.left").font(.system(size: 18, weight: .medium))
+                            key(width: keyWidth * 1.5, action: onDelete) {
+                                Image(systemName: "delete.left").font(.system(size: 19, weight: .light))
                             }
                         }
                     }
                     .frame(maxWidth: .infinity)
                 }
             }
+            .padding(.vertical, 10)
         }
-        .frame(height: 54 * 3 + 16)
+        .frame(height: keyHeight * 3 + 4 + 20)
         .foregroundStyle(Color.ink)
-        .padding(.horizontal, 6)
+        .background(Color.key.opacity(0.55).ignoresSafeArea(edges: .bottom))
+        .overlay(alignment: .top) { Rectangle().fill(Color.rule).frame(height: 1) }
     }
 
-    private func wideKey<L: View>(width: CGFloat, action: @escaping () -> Void, @ViewBuilder label: () -> L) -> some View {
+    private func key<L: View>(width: CGFloat, action: @escaping () -> Void, @ViewBuilder label: () -> L) -> some View {
         Button(action: action) {
             label()
-                .frame(width: width, height: 54)
-                .background(RoundedRectangle(cornerRadius: 6).fill(Color.key))
+                .frame(width: width, height: keyHeight)
+                .contentShape(Rectangle())
         }
         .buttonStyle(KeyStyle())
     }
@@ -58,6 +58,10 @@ struct KeyboardView: View {
 private struct KeyStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .brightness(configuration.isPressed ? -0.08 : 0)
+            .background(
+                Circle()
+                    .fill(Color.ink.opacity(configuration.isPressed ? 0.1 : 0))
+                    .frame(width: 44, height: 44)
+            )
     }
 }

@@ -27,7 +27,7 @@ struct ResultsView: View {
                     .font(.serif(38))
                     .padding(.top, 12)
 
-                ResultSquares(record: record, size: 22)
+                ResultDots(record: record, size: 20)
                     .padding(.top, 14)
 
                 statsRow
@@ -86,29 +86,32 @@ struct ResultsView: View {
     private var ladder: some View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(words.indices, id: \.self) { i in
-                HStack(spacing: 12) {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(color(for: i))
-                        .frame(width: 14, height: 14)
+                HStack(spacing: 14) {
+                    ZStack {
+                        VStack(spacing: 0) {
+                            SpineLine(done: true).opacity(i == 0 ? 0 : 1)
+                            SpineLine(done: true).opacity(i == words.count - 1 ? 0 : 1)
+                        }
+                        Circle().fill(color(for: i)).frame(width: 12, height: 12)
+                    }
+                    .frame(width: 14)
                     Text(words[i])
-                        .font(.system(size: 17, weight: .bold))
-                        .tracking(1.5)
+                        .font(.serif(20))
+
                     Spacer()
                     Text(note(for: i))
                         .font(.system(size: 13))
                         .foregroundStyle(Color.inkSoft)
                 }
+                .frame(height: 30)
                 if i < words.count - 1 {
-                    HStack(spacing: 18) {
-                        Rectangle()
-                            .fill(Color.rule)
-                            .frame(width: 2, height: 24)
-                            .padding(.leading, 6)
+                    HStack(spacing: 14) {
+                        SpineLine(done: true).frame(width: 14)
                         Text("\(words[i]) \(words[i + 1])".lowercased())
                             .font(.serif(14, weight: .regular).italic())
                             .foregroundStyle(Color.inkSoft)
                     }
-                    .padding(.vertical, 3)
+                    .frame(height: 24)
                 }
             }
         }
@@ -142,15 +145,15 @@ struct ResultsView: View {
     }
 }
 
-/// Flat result squares, one per hidden word. Matches the share text.
-struct ResultSquares: View {
+/// One dot per hidden word. Matches the share text.
+struct ResultDots: View {
     let record: PuzzleRecord
     var size: CGFloat = 12
 
     var body: some View {
         HStack(spacing: size * 0.25) {
             ForEach(Array(record.revealed.indices.dropFirst().dropLast()), id: \.self) { i in
-                RoundedRectangle(cornerRadius: size * 0.12)
+                Circle()
                     .fill(color(i))
                     .frame(width: size, height: size)
             }

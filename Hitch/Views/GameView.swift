@@ -99,14 +99,13 @@ struct GameView: View {
                     withAnimation(.snappy) { game.hint() }
                 } label: {
                     Text("Reveal a letter")
-                        .font(.system(size: 14, weight: .semibold))
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 9)
-                        .overlay(Capsule().stroke(Color.ink, lineWidth: 1))
+                        .font(.system(size: 15, weight: .semibold))
+                        .underline(true, color: Color.ember)
+                        .frame(minHeight: 44)
                 }
                 .foregroundStyle(Color.ink)
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 20)
 
             KeyboardView(
                 canSubmit: game.canSubmit,
@@ -115,8 +114,7 @@ struct GameView: View {
                 onEnter: { withAnimation(.snappy) { game.submit() } }
             )
         }
-        .padding(.top, 8)
-        .padding(.bottom, 4)
+        .padding(.top, 4)
     }
 
     private var finishedBar: some View {
@@ -151,30 +149,32 @@ struct GameView: View {
 
 // MARK: - Board
 
+/// The chain: one vertical line, a knot per word, words hanging off it.
 struct ChainBoard: View {
     let game: Game
     let size: CGSize
 
-    private var metrics: (tile: CGFloat, gap: CGFloat, link: CGFloat) {
+    var body: some View {
         let longest = CGFloat(game.words.map(\.count).max() ?? 7)
         let rows = CGFloat(game.words.count)
-        let gap: CGFloat = 5
-        let byWidth = (size.width - 52 - gap * (longest - 1)) / longest
-        // Each row is a tile plus 12pt of highlight padding; connectors are ~40% of a tile.
-        let byHeight = (size.height - 12 * rows - 8) / (rows + (rows - 1) * 0.4)
-        let tile = min(byWidth, byHeight, 52)
-        return (tile, gap, tile * 0.4)
-    }
+        // `slot` is the type size. Rows are 1.25 of it, links 0.55, letters 0.88 wide.
+        let byHeight = size.height / (rows * 1.25 + (rows - 1) * 0.55)
+        let byWidth = (size.width - ChainMetrics.spine - 16) / (longest * 0.88)
+        let slot = min(byHeight, byWidth, 46)
 
-    var body: some View {
-        let m = metrics
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
             ForEach(game.words.indices, id: \.self) { i in
                 if i > 0 {
-                    Connector(done: isDone(i - 1) && isDone(i))
-                        .frame(height: m.link)
+                    LinkRow(
+                        phrase: "\(game.words[i - 1]) \(game.words[i])",
+                        done: isDone(i - 1) && isDone(i),
+                        fontSize: max(12, slot * 0.34)
+                    )
+                    .frame(height: slot * 0.55)
                 }
-                WordRow(game: game, index: i, tile: m.tile, gap: m.gap)
+                WordRow(game: game, index: i, slot: slot, topDone: i > 0 && isDone(i - 1) && isDone(i),
+                        bottomDone: i < game.words.count - 1 && isDone(i) && isDone(i + 1))
+                    .frame(height: slot * 1.25)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -186,84 +186,174 @@ struct ChainBoard: View {
     }
 }
 
-struct Connector: View {
+enum ChainMetrics {
+    /// Width of the column the line runs down.
+    static let spine: CGFloat = 36
+}
+
+struct SpineLine: View {
     let done: Bool
 
     var body: some View {
-        Capsule()
-            .fill(done ? Color.pine : Color.rule)
-            .frame(width: 4)
-            .padding(.vertical, 3)
+        Rectangle()
+            .fill(done ? Color.ink : Color.rule)
+            .frame(width: 2)
             .animation(.easeInOut(duration: 0.4), value: done)
+    }
+}
+
+struct LinkRow: View {
+    let phrase: String
+    let done: Bool
+    let fontSize: CGFloat
+
+    var body: some View {
+        HStack(spacing: 0) {
+            SpineLine(done: done)
+                .frame(width: ChainMetrics.spine)
+            if done {
+                Text(phrase.lowercased())
+                    .font(.serif(fontSize, weight: .regular).italic())
+                    .foregroundStyle(Color.inkSoft)
+                    .transition(.opacity.combined(with: .offset(x: -6)))
+            }
+            Spacer(minLength: 0)
+        }
+        .animation(.easeOut(duration: 0.35).delay(0.25), value: done)
+    }
+}
+
+struct Knot: View {
+    let state: SlotState
+    let selected: Bool
+
+    var body: some View {
+        switch state {
+        case .anchor:
+            Circle().fill(Color.ink).frame(width: 12, height: 12)
+        case .solved:
+            Circle().fill(Color.pine).frame(width: 12, height: 12)
+        case .given:
+            Circle().fill(Color.stone).frame(width: 12, height: 12)
+        case .active:
+            Circle()
+                .fill(selected ? Color.ember : Color.paper)
+                .overlay(Circle().stroke(selected ? Color.ember : Color.ink, lineWidth: 2))
+                .frame(width: 14, height: 14)
+        case .locked:
+            Circle().fill(Color.rule).frame(width: 7, height: 7)
+        }
     }
 }
 
 struct WordRow: View {
     let game: Game
     let index: Int
-    let tile: CGFloat
-    let gap: CGFloat
+    let slot: CGFloat
+    let topDone: Bool
+    let bottomDone: Bool
 
     @State private var shake: CGFloat = 0
-    @State private var flip = false
+    @State private var hop = 0
 
     var body: some View {
         let state = game.state(index)
         let word = Array(game.words[index])
         let selected = game.selected == index
+        let last = game.words.count - 1
 
         Button {
             withAnimation(.snappy) { game.select(index) }
         } label: {
-            tiles(word: word, state: state, selected: selected)
+            HStack(spacing: 0) {
+                ZStack {
+                    VStack(spacing: 0) {
+                        SpineLine(done: topDone).opacity(index == 0 ? 0 : 1)
+                        SpineLine(done: bottomDone).opacity(index == last ? 0 : 1)
+                    }
+                    Knot(state: state, selected: selected)
+                }
+                .frame(width: ChainMetrics.spine)
+
+                HStack(spacing: slot * 0.1) {
+                    ForEach(word.indices, id: \.self) { pos in
+                        letterSlot(pos: pos, state: state, selected: selected)
+                            .keyframeAnimator(initialValue: 0.0, trigger: hop) { content, y in
+                                content.offset(y: y)
+                            } keyframes: { _ in
+                                KeyframeTrack {
+                                    LinearKeyframe(0, duration: 0.01 + Double(pos) * 0.05)
+                                    SpringKeyframe(-slot * 0.22, duration: 0.14)
+                                    SpringKeyframe(0, duration: 0.3, spring: .bouncy)
+                                }
+                            }
+                    }
+                }
+                .modifier(Shake(amount: shake))
+                .padding(.leading, 6)
+
+                Spacer(minLength: 0)
+            }
+            .frame(maxHeight: .infinity)
+            .background(selected ? Color.amber.opacity(0.16) : Color.clear)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .modifier(Shake(amount: shake))
         .onChange(of: game.wrongCount) { _, _ in
             guard game.lastWrong == index else { return }
             withAnimation(.linear(duration: 0.4)) { shake += 1 }
         }
         .onChange(of: game.solveCount) { _, _ in
             guard game.lastSolved == index else { return }
-            flip.toggle()
+            hop += 1
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityText(state: state))
         .accessibilityAddTraits(state == .active ? .isButton : [])
     }
 
-
-    private func tiles(word: [Character], state: SlotState, selected: Bool) -> some View {
-        HStack(spacing: gap) {
-            ForEach(word.indices, id: \.self) { pos in
-                TileView(
-                    letter: game.letter(index, pos),
-                    style: style(state: state, pos: pos, selected: selected),
-                    size: tile
-                )
-                .rotation3DEffect(.degrees(flip ? 360 : 0), axis: (x: 1, y: 0, z: 0))
-                .animation(.easeInOut(duration: 0.5).delay(Double(pos) * 0.07), value: flip)
+    private func letterSlot(pos: Int, state: SlotState, selected: Bool) -> some View {
+        let letter = game.letter(index, pos)
+        let open = state == .active || state == .locked
+        let isCursor = selected && pos == game.revealed(index) + typedCount
+        return ZStack(alignment: .bottom) {
+            if let letter {
+                Text(String(letter))
+                    .font(.serif(slot))
+                    .foregroundStyle(color(pos: pos, state: state))
+                    .fixedSize()
+                    .padding(.bottom, slot * 0.1)
+                    .transition(.opacity.combined(with: .scale(scale: 0.7)))
+            }
+            if open {
+                Rectangle()
+                    .fill(underline(pos: pos, state: state, selected: selected, cursor: isCursor))
+                    .frame(height: isCursor ? 3 : 2)
+                    .padding(.bottom, slot * 0.08)
             }
         }
-        .padding(6)
-        .background(
-            RoundedRectangle(cornerRadius: 4)
-                .fill(selected ? Color.amber.opacity(0.22) : Color.clear)
-        )
-        .contentShape(Rectangle())
+        .frame(width: slot * 0.78, height: slot * 1.25, alignment: .bottom)
     }
 
-    private func style(state: SlotState, pos: Int, selected: Bool) -> TileView.Style {
+    private var typedCount: Int {
+        (0..<game.words[index].count).filter { game.isTyped(index, $0) }.count
+    }
+
+    private func color(pos: Int, state: SlotState) -> Color {
         switch state {
-        case .anchor: return .anchor
-        case .solved: return .solved
-        case .given: return .given
-        case .locked: return .locked
-        case .active:
-            if pos < game.revealed(index) { return pos == 0 ? .revealed : .hinted }
-            if game.isTyped(index, pos) { return .typed }
-            return selected ? .emptyActive : .empty
+        case .anchor: .ink
+        case .solved: .pine
+        case .given: .stone
+        case .locked: .clear
+        case .active: pos > 0 && pos < game.revealed(index) ? .ember : .ink
         }
+    }
+
+    private func underline(pos: Int, state: SlotState, selected: Bool, cursor: Bool) -> Color {
+        if state == .locked { return .rule }
+        if cursor { return .ember }
+        if pos > 0 && pos < game.revealed(index) { return .ember }
+        return selected ? .ink : .inkSoft.opacity(0.5)
     }
 
     private func accessibilityText(state: SlotState) -> String {
@@ -274,66 +364,6 @@ struct WordRow: View {
         case .active:
             let shown = word.prefix(game.revealed(index))
             return "Word \(index + 1), \(word.count) letters, starts with \(shown.map(String.init).joined(separator: " "))"
-        }
-    }
-}
-
-struct TileView: View {
-    enum Style {
-        case anchor, solved, given, locked, empty, emptyActive, revealed, hinted, typed
-    }
-
-    let letter: Character?
-    let style: Style
-    let size: CGFloat
-
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: size * 0.08)
-                .fill(fill)
-            RoundedRectangle(cornerRadius: size * 0.08)
-                .strokeBorder(border, lineWidth: borderWidth)
-            if let letter {
-                Text(String(letter))
-                    .font(.system(size: size * 0.54, weight: .bold))
-                    .foregroundStyle(textColor)
-                    .transition(.scale(scale: 0.6).combined(with: .opacity))
-            }
-        }
-        .frame(width: size, height: size)
-        .scaleEffect(style == .typed ? 1.0 : 1)
-    }
-
-    private var fill: Color {
-        switch style {
-        case .anchor: .ink
-        case .solved: .pine
-        case .given: .stone
-        case .hinted: .amber
-        case .locked: .rule.opacity(0.35)
-        default: .card
-        }
-    }
-
-    private var border: Color {
-        switch style {
-        case .typed, .revealed: .ink
-        case .emptyActive: .inkSoft
-        case .empty: .rule
-        default: .clear
-        }
-    }
-
-    private var borderWidth: CGFloat {
-        style == .typed || style == .revealed ? 2 : 1.5
-    }
-
-    private var textColor: Color {
-        switch style {
-        case .anchor: .paper
-        case .solved, .given: .white
-        case .hinted: .ink
-        default: .ink
         }
     }
 }

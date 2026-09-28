@@ -18,24 +18,19 @@ struct HowToPlayView: View {
                     bullet("Fewest extra letters wins bragging rights at the cabin.")
                 }
 
-                Text("Example")
-                    .font(.system(size: 15, weight: .bold))
+                Eyebrow("Example")
                     .padding(.top, 6)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    exampleRow("SNOW", .anchor)
-                    exampleRow("BALL", .solved, note: "snowball")
-                    exampleRow("ROOM", .solved, note: "ballroom")
-                    exampleRow("SE", .active, total: 7, note: "room service?")
-                    exampleRow("", .locked, total: 7)
-                    exampleRow("", .locked, total: 5)
-                    exampleRow("WHEEL", .anchor)
+                GeometryReader { geo in
+                    ChainBoard(game: example, size: geo.size)
                 }
+                .frame(height: 300)
+                .allowsHitTesting(false)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    legend(.pine, "Solved")
-                    legend(.amber, "Extra letter revealed")
-                    legend(.stone, "Fully revealed")
+                VStack(alignment: .leading, spacing: 10) {
+                    legend(Text("SEA").foregroundStyle(Color.pine), "Solved")
+                    legend(Text("E").foregroundStyle(Color.ember).underline(true, color: .ember), "Revealed letter, costs one")
+                    legend(Text("BEAN").foregroundStyle(Color.stone), "Fully revealed")
                 }
                 .padding(.top, 4)
 
@@ -59,36 +54,18 @@ struct HowToPlayView: View {
         .font(.system(size: 16))
     }
 
-    private func exampleRow(_ word: String, _ state: SlotState, total: Int? = nil, note: String? = nil) -> some View {
-        let letters = Array(word)
-        let count = total ?? letters.count
-        return HStack(spacing: 4) {
-            ForEach(0..<count, id: \.self) { i in
-                let style: TileView.Style = switch state {
-                case .anchor: .anchor
-                case .solved: .solved
-                case .given: .given
-                case .locked: .locked
-                case .active: i == 0 ? .revealed : i < letters.count ? .hinted : .empty
-                }
-                TileView(letter: i < letters.count ? letters[i] : nil, style: style, size: 28)
-            }
-        }
-        .overlay(alignment: .leading) {
-            if let note {
-                Text(note)
-                    .font(.system(size: 13, weight: .medium).italic())
-                    .foregroundStyle(Color.inkSoft)
-                    .fixedSize()
-                    .offset(x: CGFloat(count) * 32 + 8)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
+    private let example = Game(
+        example: ["SNOW", "BALL", "ROOM", "SERVICE", "STATION", "WAGON", "WHEEL"],
+        revealed: [4, 4, 4, 2, 0, 1, 5],
+        solved: [true, true, true, false, false, false, true],
+        selected: 3
+    )
 
-    private func legend(_ color: Color, _ label: String) -> some View {
-        HStack(spacing: 10) {
-            RoundedRectangle(cornerRadius: 4).fill(color).frame(width: 20, height: 20)
+    private func legend(_ sample: Text, _ label: String) -> some View {
+        HStack(spacing: 14) {
+            sample
+                .font(.serif(20))
+                .frame(width: 64, alignment: .leading)
             Text(label).font(.system(size: 15))
         }
     }
@@ -173,38 +150,41 @@ struct ArchiveView: View {
             .padding(.horizontal, 8)
             .overlay(alignment: .bottom) { Rectangle().fill(Color.rule).frame(height: 1) }
 
-            List {
-                ForEach((1...PuzzleBook.todayNumber).reversed(), id: \.self) { n in
-                    let puzzle = PuzzleBook.puzzle(n)
-                    let record = store.record(for: puzzle)
-                    Button { path.append(.play(n)) } label: {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(puzzle.date.formatted(.dateTime.weekday(.wide).month(.wide).day()))
-                                    .font(.system(size: 16, weight: .semibold))
-                                Text("No. \(n)")
-                                    .font(.system(size: 13))
-                                    .foregroundStyle(Color.inkSoft)
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ForEach((1...PuzzleBook.todayNumber).reversed(), id: \.self) { n in
+                        let puzzle = PuzzleBook.puzzle(n)
+                        let record = store.record(for: puzzle)
+                        Button { path.append(.play(n)) } label: {
+                            HStack(alignment: .firstTextBaseline, spacing: 16) {
+                                Text("\(n)")
+                                    .font(.serif(30, weight: .regular))
+                                    .frame(width: 44, alignment: .leading)
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(puzzle.date.formatted(.dateTime.weekday(.wide).month(.abbreviated).day()))
+                                        .font(.system(size: 16, weight: .semibold))
+                                    Text("\(puzzle.words.first ?? "") to \(puzzle.words.last ?? "")")
+                                        .font(.serif(14, weight: .regular).italic())
+                                        .foregroundStyle(Color.inkSoft)
+                                }
+                                Spacer()
+                                if record.isFinished {
+                                    ResultDots(record: record, size: 10)
+                                } else if record.isStarted {
+                                    Text("In progress")
+                                        .font(.system(size: 13, weight: .medium))
+                                        .foregroundStyle(Color.ember)
+                                }
                             }
-                            Spacer()
-                            if record.isFinished {
-                                ResultSquares(record: record, size: 12)
-                            } else if record.isStarted {
-                                Text("In progress")
-                                    .font(.system(size: 13, weight: .medium))
-                                    .foregroundStyle(Color.ember)
-                            }
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(Color.inkSoft)
+                            .padding(.vertical, 16)
+                            .contentShape(Rectangle())
                         }
-                        .contentShape(Rectangle())
+                        .buttonStyle(.plain)
+                        .overlay(alignment: .bottom) { Rule() }
                     }
-                    .foregroundStyle(Color.ink)
-                    .listRowBackground(Color.card)
                 }
+                .padding(.horizontal, 24)
             }
-            .scrollContentBackground(.hidden)
         }
         .foregroundStyle(Color.ink)
         .background(Color.paper)
