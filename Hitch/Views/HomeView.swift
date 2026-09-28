@@ -67,6 +67,7 @@ struct HomeView: View {
                     .padding(.bottom, 12)
             }
             .padding(.horizontal, 28)
+            .frame(maxWidth: 480)
             .foregroundStyle(Color.cream)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.splash)

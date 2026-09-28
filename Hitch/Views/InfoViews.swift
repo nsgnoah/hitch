@@ -184,6 +184,8 @@ struct ArchiveView: View {
                     }
                 }
                 .padding(.horizontal, 24)
+                .frame(maxWidth: 640)
+                .frame(maxWidth: .infinity)
             }
         }
         .foregroundStyle(Color.ink)

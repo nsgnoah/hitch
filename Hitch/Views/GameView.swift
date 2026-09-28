@@ -4,7 +4,8 @@ struct GameView: View {
     @State private var game: Game
     @State private var showResults = false
     @State private var showHelp = false
-    @FocusState private var focused: Bool
+    /// Bumped to bring the keyboard back after the player dismisses it.
+    @State private var focusToken = 0
     @Environment(\.dismiss) private var dismiss
 
     init(puzzle: Puzzle) {
@@ -19,7 +20,9 @@ struct GameView: View {
                 ChainBoard(game: game, size: geo.size)
                     .frame(width: geo.size.width, height: geo.size.height)
             }
+            .frame(maxWidth: 600)
             .padding(.horizontal, 16)
+            .simultaneousGesture(TapGesture().onEnded { focusToken += 1 })
 
             if game.isFinished {
                 finishedBar
@@ -27,16 +30,20 @@ struct GameView: View {
                 controls
             }
         }
+        .frame(maxWidth: .infinity)
         .background(Color.paper)
+        .background(
+            KeyCatcher(
+                active: !game.isFinished && !showResults && !showHelp,
+                focusToken: focusToken,
+                onLetter: { c in withAnimation(.snappy(duration: 0.12)) { game.type(c) } },
+                onDelete: { game.backspace() },
+                onEnter: { withAnimation(.snappy) { game.submit() } }
+            )
+            .frame(width: 1, height: 1)
+        )
         .toolbar(.hidden, for: .navigationBar)
-        .focusable()
-        .focused($focused)
-        .focusEffectDisabled()
-        .onKeyPress(phases: .down) { press in
-            handleKey(press)
-        }
         .onAppear {
-            focused = true
             if game.isFinished { showResults = true }
         }
         .sensoryFeedback(.error, trigger: game.wrongCount)
@@ -84,37 +91,29 @@ struct GameView: View {
     }
 
     private var controls: some View {
-        VStack(spacing: 10) {
-            HStack {
-                HStack(spacing: 8) {
-                    Eyebrow("Extra letters")
-                    Text("\(game.record.totalExtra)")
-                        .font(.system(size: 15, weight: .bold).monospacedDigit())
-                        .contentTransition(.numericText())
-                }
-
-                Spacer()
-
-                Button {
-                    withAnimation(.snappy) { game.hint() }
-                } label: {
-                    Text("Reveal a letter")
-                        .font(.system(size: 15, weight: .semibold))
-                        .underline(true, color: Color.ember)
-                        .frame(minHeight: 44)
-                }
-                .foregroundStyle(Color.ink)
+        HStack {
+            HStack(spacing: 8) {
+                Eyebrow("Extra letters")
+                Text("\(game.record.totalExtra)")
+                    .font(.system(size: 15, weight: .bold).monospacedDigit())
+                    .contentTransition(.numericText())
             }
-            .padding(.horizontal, 20)
 
-            KeyboardView(
-                canSubmit: game.canSubmit,
-                onLetter: { c in withAnimation(.snappy(duration: 0.12)) { game.type(c) } },
-                onDelete: { game.backspace() },
-                onEnter: { withAnimation(.snappy) { game.submit() } }
-            )
+            Spacer()
+
+            Button {
+                withAnimation(.snappy) { game.hint() }
+            } label: {
+                Text("Reveal a letter")
+                    .font(.system(size: 15, weight: .semibold))
+                    .underline(true, color: Color.ember)
+                    .frame(minHeight: 44)
+            }
+            .foregroundStyle(Color.ink)
         }
-        .padding(.top, 4)
+        .frame(maxWidth: 600)
+        .padding(.horizontal, 20)
+        .padding(.bottom, 4)
     }
 
     private var finishedBar: some View {
@@ -123,27 +122,6 @@ struct GameView: View {
             .frame(maxWidth: 320)
             .padding(.vertical, 20)
             .transition(.opacity)
-    }
-
-    private func handleKey(_ press: KeyPress) -> KeyPress.Result {
-        switch press.key {
-        case .return:
-            withAnimation(.snappy) { game.submit() }
-            return .handled
-        case .delete:
-            game.backspace()
-            return .handled
-        case .upArrow, .downArrow:
-            let targets = [game.topFrontier, game.bottomFrontier].compactMap { $0 }
-            if let t = targets.first(where: { $0 != game.selected }) { game.select(t) }
-            return .handled
-        default:
-            if let c = press.characters.first, c.isLetter, c.isASCII {
-                withAnimation(.snappy(duration: 0.12)) { game.type(c) }
-                return .handled
-            }
-            return .ignored
-        }
     }
 }
 
