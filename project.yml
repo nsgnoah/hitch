@@ -18,6 +18,10 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: co.nsgsolutions.hitch
+        DEVELOPMENT_TEAM: S6QW7SV228
+        CODE_SIGN_STYLE: Automatic
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.word-games
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Hitch
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
