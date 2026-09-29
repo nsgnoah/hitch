@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hitch Support</title>
+<meta name="description" content="Help and contact for Hitch, a daily word-chain puzzle for iPhone and iPad.">
+<style>
+  :root { --ink:#1F2421; --ink2:#6B6A63; --paper:#F7F3EA; --line:#D9D1C1; --pine:#2F6B4F; }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; padding:40px 16px 80px;
+    background:var(--paper); color:var(--ink);
+    font:17px/1.6 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  }
+  main { max-width:660px; margin:0 auto; }
+  h1, h2, .word { font-family: "New York", ui-serif, Georgia, "Times New Roman", serif; }
+  h1 { font-size:44px; line-height:1.05; margin:0 0 6px; }
+  h2 { font-size:21px; margin:34px 0 8px; }
+  .tagline { color:var(--ink2); margin:0 0 26px; font-size:19px; }
+  a { color:var(--pine); }
+  ul { padding-left:22px; }
+  li { margin:8px 0; }
+  .chain { list-style:none; padding:0; margin:22px 0 8px; position:relative; }
+  .chain::before { content:""; position:absolute; left:5px; top:12px; bottom:12px; width:2px; background:var(--line); }
+  .chain li { position:relative; padding-left:28px; margin:0; line-height:1.9; }
+  .chain li::before { content:""; position:absolute; left:0; top:50%; width:12px; height:12px; margin-top:-6px; border-radius:50%; background:var(--pine); }
+  .word { font-weight:700; letter-spacing:0.08em; font-size:19px; }
+  .join { color:var(--ink2); font-style:italic; font-size:15px; margin-left:10px; }
+  footer { margin-top:44px; padding-top:18px; border-top:1px solid var(--line); color:var(--ink2); font-size:14px; }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink:#EDE8DD; --ink2:#A19D93; --paper:#191A18; --line:#3A3B36; --pine:#4C9670; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Hitch</h1>
+  <p class="tagline">Link seven words, top to bottom.</p>
+
+  <p>Hitch is a daily word-chain puzzle for iPhone and iPad. You&rsquo;re given the top and bottom
+  words, and each word joins the next to make a compound word or familiar phrase. Every wrong guess,
+  or tap of Reveal, shows one more letter. Fewest extra letters wins.</p>
+
+  <ol class="chain" aria-label="Example chain">
+    <li><span class="word">SNOW</span><span class="join">snow ball</span></li>
+    <li><span class="word">BALL</span><span class="join">ball room</span></li>
+    <li><span class="word">ROOM</span><span class="join">room service</span></li>
+    <li><span class="word">SERVICE</span><span class="join">service station</span></li>
+    <li><span class="word">STATION</span><span class="join">station wagon</span></li>
+    <li><span class="word">WAGON</span><span class="join">wagon wheel</span></li>
+    <li><span class="word">WHEEL</span></li>
+  </ol>
+
+  <h2>Getting help</h2>
+  <p>Email <a href="mailto:noah@nsgsolutions.co">noah@nsgsolutions.co</a>. It helps to include the
+  chain number, what you were doing, and your iPhone or iPad model.</p>
+
+  <h2>Common questions</h2>
+  <ul>
+    <li><strong>Do I need an account?</strong> No. Hitch has no accounts and works offline.</li>
+    <li><strong>When does a new chain come out?</strong> Every day at midnight, your local time.</li>
+    <li><strong>Can I play chains I missed?</strong> Yes. Tap Archive on the home screen.</li>
+    <li><strong>How do I work from the other end?</strong> Tap the other highlighted row. With a
+    hardware keyboard, press Tab or an arrow key.</li>
+    <li><strong>The keyboard disappeared.</strong> Tap the chain to bring it back.</li>
+    <li><strong>I think a link is wrong.</strong> Send the chain number and the two words. If
+    it&rsquo;s wrong, it gets fixed in an update.</li>
+  </ul>
+
+  <h2>Privacy</h2>
+  <p>Hitch collects nothing. Read the <a href="privacy.html">privacy policy</a>, which is also in the
+  app under How to Play.</p>
+
+  <footer>
+    Hitch is made by Noah Greensweig. <a href="privacy.html">Privacy policy</a>
+  </footer>
+</main>
+</body>
+</html>
