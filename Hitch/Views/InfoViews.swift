@@ -136,7 +136,7 @@ struct PrivacyPolicyView: View {
             VStack(alignment: .leading, spacing: 20) {
                 SheetHeader(title: "Privacy Policy") { dismiss() }
 
-                Text("Effective September 27, 2026")
+                Text("Effective October 2, 2026")
                     .scaledFont(14, relativeTo: .subheadline)
                     .foregroundStyle(Color.inkSoft)
 
@@ -145,7 +145,7 @@ struct PrivacyPolicyView: View {
                 section("What stays on your device",
                         "Hitch saves your puzzle progress, your statistics, and whether you've seen How to Play, using iOS app storage on this device. Your device backups (iCloud or your computer) include this data if you use them. It is never sent to us.")
                 section("Sharing",
-                        "When you tap Share, Hitch hands your result — the puzzle number, colored squares, and extra-letter count — to the iOS share sheet, and it goes only where you choose. We don't receive a copy.")
+                        "When you tap Share, Hitch hands a summary of your game — the puzzle number, the chain's first and last words, colored squares, and your result — to the iOS share sheet, and it goes only where you choose. We don't receive a copy.")
                 section("Children",
                         "Hitch doesn't collect personal information from anyone, including children.")
                 section("Deleting your data",
