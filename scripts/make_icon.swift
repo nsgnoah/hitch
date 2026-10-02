@@ -1,4 +1,4 @@
-// Renders the app icon: two slim interlocking links, gold over cream, hanging top to bottom on pine.
+// Renders the app icon: two slim links, ink over pine, hanging top to bottom on cabin cream.
 // Usage: swift scripts/make_icon.swift <out.png> [light|dark|tinted]
 // Dark and tinted variants leave the background clear; the system draws its own behind them.
 import CoreGraphics
@@ -9,35 +9,38 @@ import UniformTypeIdentifiers
 let variant = CommandLine.arguments.count > 2 ? CommandLine.arguments[2] : "light"
 let size: CGFloat = 1024
 
-func rgb(_ hex: UInt32, _ alpha: CGFloat = 1) -> CGColor {
+func rgb(_ hex: UInt32) -> CGColor {
     CGColor(red: CGFloat((hex >> 16) & 0xFF) / 255, green: CGFloat((hex >> 8) & 0xFF) / 255,
-            blue: CGFloat(hex & 0xFF) / 255, alpha: alpha)
+            blue: CGFloat(hex & 0xFF) / 255, alpha: 1)
 }
 
-// Top-to-bottom gradients for each link.
-let (upper, lower): ((UInt32, UInt32), (UInt32, UInt32)) = switch variant {
-case "tinted": ((0xA6A6A6, 0x8C8C8C), (0xFFFFFF, 0xE8E8E8))
-default: ((0xF2C25A, 0xD69A2B), (0xFFFDF8, 0xE6DDC9))
+let (upper, lower): (CGColor, CGColor) = switch variant {
+case "dark": (rgb(0xF2EDE2), rgb(0x4C9670))
+case "tinted": (rgb(0xFFFFFF), rgb(0x9A9A9A))
+default: (rgb(0x1F2421), rgb(0x2F6B4F))
 }
 
 // The App Store icon can't have an alpha channel; the dark and tinted variants need one.
 let ctx = CGContext(data: nil, width: Int(size), height: Int(size), bitsPerComponent: 8, bytesPerRow: 0,
                     space: CGColorSpaceCreateDeviceRGB(),
                     bitmapInfo: (variant == "light" ? CGImageAlphaInfo.noneSkipLast : .premultipliedLast).rawValue)!
-
-func gradient(_ colors: (UInt32, UInt32)) -> CGGradient {
-    CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: [rgb(colors.0), rgb(colors.1)] as CFArray, locations: [0, 1])!
-}
-
 if variant == "light" {
-    ctx.drawLinearGradient(gradient((0x3B8060, 0x1F4C37)), start: CGPoint(x: 0, y: size), end: .zero, options: [])
+    ctx.setFillColor(rgb(0xF7F3EA))
+    ctx.fill(CGRect(x: 0, y: 0, width: size, height: size))
 }
 
-// Each link is a stadium: `length` long, `width` across, measured on the stroke's centerline.
-let length: CGFloat = 490, width: CGFloat = 214, stroke: CGFloat = 54
+// Each link is a stadium: `length` tall, `width` across, measured on the stroke's centerline.
+let length: CGFloat = 456, width: CGFloat = 184, stroke: CGFloat = 44
+let topCenter = CGPoint(x: size / 2 - 43, y: size / 2 + 118)
+let bottomCenter = CGPoint(x: size / 2 + 43, y: size / 2 - 118)
 
-/// Points along a vertical link's centerline, clockwise from the top of its right side.
-func link(center c: CGPoint) -> [CGPoint] {
+func link(_ c: CGPoint) -> CGPath {
+    let rect = CGRect(x: c.x - width / 2, y: c.y - length / 2, width: width, height: length)
+    return CGPath(roundedRect: rect, cornerWidth: width / 2, cornerHeight: width / 2, transform: nil)
+}
+
+/// Points along a link's centerline, for finding where the two links cross.
+func samples(_ c: CGPoint) -> [CGPoint] {
     let r = width / 2, half = length / 2 - r, n = 1600
     let perimeter = 4 * half + 2 * .pi * r
     return (0..<n).map { k in
@@ -53,88 +56,63 @@ func link(center c: CGPoint) -> [CGPoint] {
     }
 }
 
-func path(_ points: [CGPoint]) -> CGPath {
-    let p = CGMutablePath()
-    p.addLines(between: points)
-    p.closeSubpath()
-    return p
-}
-
-/// Fills the stroke of `p` with a top-to-bottom gradient.
-func draw(_ p: CGPath, _ colors: (UInt32, UInt32)) {
-    ctx.saveGState()
+func draw(_ p: CGPath, _ color: CGColor, width w: CGFloat = stroke) {
     ctx.addPath(p)
-    ctx.setLineWidth(stroke)
-    ctx.replacePathWithStrokedPath()
-    ctx.clip()
-    ctx.drawLinearGradient(gradient(colors), start: CGPoint(x: 0, y: size), end: .zero, options: [])
-    ctx.restoreGState()
+    ctx.setLineWidth(w)
+    ctx.setStrokeColor(color)
+    ctx.strokePath()
 }
 
-func clip(toStrokeOf p: CGPath) {
-    ctx.addPath(p)
-    ctx.setLineWidth(stroke)
-    ctx.replacePathWithStrokedPath()
-    ctx.clip()
-}
+let top = link(topCenter), bottom = link(bottomCenter)
+draw(top, upper)
+draw(bottom, lower)
 
-// The upper link sits a little left, the lower a little right, overlapping by about a link's width.
-let top = link(center: CGPoint(x: size / 2 - 46, y: size / 2 + 128))
-let bottom = link(center: CGPoint(x: size / 2 + 46, y: size / 2 - 128))
-let topPath = path(top), bottomPath = path(bottom)
-
-// On the light icon, a soft shadow lifts both links off the background.
-if variant == "light" {
-    ctx.saveGState()
-    ctx.setShadow(offset: CGSize(width: 0, height: -12), blur: 36, color: rgb(0x0B2418, 0.35))
-    ctx.beginTransparencyLayer(auxiliaryInfo: nil)
-}
-draw(topPath, upper)
-draw(bottomPath, lower)
-if variant == "light" {
-    ctx.endTransparencyLayer()
-    ctx.restoreGState()
-}
-
-// The links cross twice. The lower link stays on top at one crossing; the upper goes over at the other.
+// The links cross twice. At each crossing the strand on top gets a thin gap on either side,
+// like a knot diagram: the upper link passes over at the top crossing, the lower one at the bottom.
+let a = samples(topCenter), b = samples(bottomCenter)
 var crossings: [CGPoint] = []
-for p in top where bottom.contains(where: { hypot($0.x - p.x, $0.y - p.y) < 2.5 }) {
+for p in a where b.contains(where: { hypot($0.x - p.x, $0.y - p.y) < 2.5 }) {
     if !crossings.contains(where: { hypot($0.x - p.x, $0.y - p.y) < 60 }) { crossings.append(p) }
 }
 guard crossings.count == 2 else { fatalError("expected two crossings, found \(crossings.count)") }
-let over = crossings.max { $0.y < $1.y }!
-let zone = CGRect(x: over.x - stroke * 1.4, y: over.y - stroke * 1.4, width: stroke * 2.8, height: stroke * 2.8)
 
-ctx.saveGState()
-ctx.addEllipse(in: zone)
-ctx.clip()
-// Shadow from the strand on top, falling only on the strand beneath it.
-ctx.saveGState()
-clip(toStrokeOf: bottomPath)
-ctx.setShadow(offset: CGSize(width: 0, height: -stroke * 0.12), blur: stroke * 0.45, color: rgb(0x000000, 0.45))
-ctx.addPath(topPath)
-ctx.setLineWidth(stroke)
-ctx.setStrokeColor(rgb(upper.1))
-ctx.strokePath()
-ctx.restoreGState()
-draw(topPath, upper)
-ctx.restoreGState()
+/// The stretch of a link's centerline within `reach` of a crossing, as an open path.
+func piece(of points: [CGPoint], at p: CGPoint, reach: CGFloat) -> CGPath {
+    let n = points.count
+    let mid = points.indices.min { hypot(points[$0].x - p.x, points[$0].y - p.y) < hypot(points[$1].x - p.x, points[$1].y - p.y) }!
+    var start = mid, end = mid, back: CGFloat = 0, ahead: CGFloat = 0
+    while back < reach { let j = (start - 1 + n) % n; back += hypot(points[j].x - points[start].x, points[j].y - points[start].y); start = j }
+    while ahead < reach { let j = (end + 1) % n; ahead += hypot(points[j].x - points[end].x, points[j].y - points[end].y); end = j }
+    var run: [CGPoint] = [], k = start
+    while true { run.append(points[k]); if k == end { break }; k = (k + 1) % n }
+    let path = CGMutablePath()
+    path.addLines(between: run)
+    return path
+}
 
-let other = crossings.min { $0.y < $1.y }!
-let underZone = CGRect(x: other.x - stroke * 1.4, y: other.y - stroke * 1.4, width: stroke * 2.8, height: stroke * 2.8)
-ctx.saveGState()
-ctx.addEllipse(in: underZone)
-ctx.clip()
-ctx.saveGState()
-clip(toStrokeOf: topPath)
-ctx.setShadow(offset: CGSize(width: 0, height: -stroke * 0.12), blur: stroke * 0.45, color: rgb(0x000000, 0.45))
-ctx.addPath(bottomPath)
+/// Clears a thin band on each side of a strand, leaving the strand itself untouched.
+func cutGap(beside strand: CGPath) {
+    let band = CGMutablePath()
+    band.addPath(strand.copy(strokingWithWidth: stroke * 1.8, lineCap: .butt, lineJoin: .round, miterLimit: 10))
+    band.addPath(strand.copy(strokingWithWidth: stroke, lineCap: .butt, lineJoin: .round, miterLimit: 10))
+    ctx.saveGState()
+    if variant == "light" { ctx.setFillColor(rgb(0xF7F3EA)) } else { ctx.setBlendMode(.clear) }
+    ctx.addPath(band)
+    ctx.fillPath(using: .evenOdd)
+    ctx.restoreGState()
+}
+
+// The lower link was drawn last, so it's already on top at the lower crossing; it only needs its gap.
+cutGap(beside: piece(of: b, at: crossings.min { $0.y < $1.y }!, reach: stroke * 1.6))
+// At the upper crossing the upper link goes over: cut its gap, then lay that stretch back on top.
+// The stretch ends on plain link, so redrawing it leaves no seam.
+let over = piece(of: a, at: crossings.max { $0.y < $1.y }!, reach: stroke * 1.6)
+cutGap(beside: over)
+ctx.addPath(over)
 ctx.setLineWidth(stroke)
-ctx.setStrokeColor(rgb(lower.1))
+ctx.setLineCap(.butt)
+ctx.setStrokeColor(upper)
 ctx.strokePath()
-ctx.restoreGState()
-draw(bottomPath, lower)
-ctx.restoreGState()
 
 let url = URL(fileURLWithPath: CommandLine.arguments[1]) as CFURL
 let dest = CGImageDestinationCreateWithURL(url, UTType.png.identifier as CFString, 1, nil)!
