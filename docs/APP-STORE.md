@@ -22,7 +22,7 @@ Noah Greensweig (team `S6QW7SV228`).
 | Promotional text, description, keywords | Filled; keywords use 93 of 100 characters |
 | Support URL | `https://nsgnoah.github.io/hitch/` |
 | Copyright | `2026 Noah Greensweig` |
-| Build | 5 (version 1.0), uploaded October 2 with the gold-and-cream icon. Build 4 added yellow revealed letters, the five-letter limit and the new share; build 3 was the first with `PrivacyInfo.xcprivacy` |
+| Build | 5 (version 1.0), uploaded and attached to the version October 2, with the gold-and-cream icon. Build 4 added yellow revealed letters, the five-letter limit and the new share; build 3 was the first with `PrivacyInfo.xcprivacy` |
 | Release | Automatically after approval |
 | Screenshots | iPhone 6.9" (6) and iPad 13" (4) from `appstore/screenshots`, uploaded October 2. The 6.9" set also covers the 6.5" and 6.7" sizes |
 
@@ -33,9 +33,7 @@ thematic.
 
 ### Still to do
 
-1. **Build.** Version 1.0 still has build 3 attached. Switch it to build 5 so the app matches the
-   screenshots.
-2. **App Review Information.** Untick "Sign-in required" and fill the contact: Noah Greensweig,
+1. **App Review Information.** Untick "Sign-in required" and fill the contact: Noah Greensweig,
    `noah@nsgsolutions.co`, and a phone number starting with `+1`. App Store Connect won't save this
    section without the phone number. Notes:
 
@@ -49,7 +47,7 @@ thematic.
    >
    > The privacy policy and contact email are in the app under How to Play > About.
 
-3. **Add for Review**, then **Submit for Review**.
+2. **Add for Review**, then **Submit for Review**.
 
 ## Screenshots
 
