@@ -22,7 +22,7 @@ Noah Greensweig (team `S6QW7SV228`).
 | Promotional text, description, keywords | Filled; keywords use 93 of 100 characters |
 | Support URL | `https://nsgnoah.github.io/hitch/` |
 | Copyright | `2026 Noah Greensweig` |
-| Build | 3 (version 1.0), the first with `PrivacyInfo.xcprivacy` |
+| Build | 4 (version 1.0), uploaded October 2 with yellow revealed letters, the five-letter limit and the new share. Build 3 was the first with `PrivacyInfo.xcprivacy`; the slimmer gold-and-cream icon needs build 5 |
 | Release | Automatically after approval |
 
 Age rating note: a few chains contain ordinary compound words such as "root beer", "beer garden",
@@ -54,9 +54,10 @@ thematic.
 
 ## Screenshots
 
-The screenshots show a seeded play history: 27 chains finished, a 19-day streak, today's chain
-finished with one extra letter, and No. 10 half played for the gameplay shot. They were taken on
-an iPhone 17 Pro Max and an iPad Pro 13-inch (M5) simulator at 9:41 with a full battery.
+The screenshots (retaken October 2 for build 4) show a seeded play history: 29 chains played, 93%
+won (two broken chains), a 19-day streak, today's chain finished with one revealed letter, and
+No. 10 half played with two of the five spare letters used. They were taken on an iPhone 17 Pro Max
+and an iPad Pro 13-inch (M5) simulator, iOS 26, at 9:41 with a full battery.
 
 ## Support site
 
