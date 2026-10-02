@@ -76,7 +76,7 @@ struct ResultsView: View {
     private var statsRow: some View {
         HStack(alignment: .top, spacing: 0) {
             stat(store.playedCount, "Played")
-            stat(store.perfectCount, "Perfect")
+            stat(store.winPercent, "Win %")
             stat(store.currentStreak, "Streak")
             stat(store.longestStreak, "Best")
         }
@@ -130,7 +130,7 @@ struct ResultsView: View {
 
     private func color(for i: Int) -> Color {
         guard i > 0, i < words.count - 1 else { return .ink }
-        if record.given[i] { return .stone }
+        if record.given[i] || !record.solved[i] { return .stone }
         switch record.revealed[i] - 1 {
         case ...0: return .pine
         case 1: return .amber
@@ -140,12 +140,14 @@ struct ResultsView: View {
 
     private func note(for i: Int) -> String {
         guard i > 0, i < words.count - 1 else { return "" }
+        if !record.solved[i] { return "missed" }
         if record.given[i] { return "revealed" }
         let extra = record.revealed[i] - 1
         return extra > 0 ? "+\(extra)" : ""
     }
 
     private var headline: String {
+        if record.isLost { return "The chain broke." }
         let n = record.totalExtra
         return n == 0 ? "A perfect chain." : "\(n) extra letter\(n == 1 ? "" : "s")."
     }
@@ -156,7 +158,7 @@ struct ResultsView: View {
     }
 }
 
-/// One dot per hidden word. Matches the share text.
+/// One dot per hidden word.
 struct ResultDots: View {
     let record: PuzzleRecord
     var size: CGFloat = 12
@@ -180,7 +182,7 @@ struct ResultDots: View {
         let c = color(i)
         if !withoutColor {
             Circle().fill(c)
-        } else if record.given[i] {
+        } else if record.given[i] || !record.solved[i] {
             Circle().strokeBorder(c, lineWidth: size * 0.14)
                 .overlay(Rectangle().fill(c).frame(width: size * 0.14).rotationEffect(.degrees(45)))
         } else {
@@ -193,6 +195,11 @@ struct ResultDots: View {
     }
 
     private var accessibilityText: String {
+        if record.isLost {
+            let middle = record.solved.indices.dropFirst().dropLast()
+            let guessed = middle.filter { record.solved[$0] && !record.given[$0] }.count
+            return "Chain broke, \(guessed) of \(middle.count) words solved"
+        }
         let n = record.totalExtra
         let given = record.given.filter { $0 }.count
         var text = n == 0 ? "Finished, a perfect chain" : "Finished, \(n) extra letter\(n == 1 ? "" : "s")"
@@ -201,7 +208,7 @@ struct ResultDots: View {
     }
 
     private func color(_ i: Int) -> Color {
-        if record.given[i] { return .stone }
+        if record.given[i] || !record.solved[i] { return .stone }
         switch record.revealed[i] - 1 {
         case ...0: return .pine
         case 1: return .amber

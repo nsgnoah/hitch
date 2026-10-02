@@ -70,6 +70,10 @@ struct GameView: View {
         .sensoryFeedback(.error, trigger: game.wrongCount)
         .sensoryFeedback(.success, trigger: game.solveCount)
         .onChange(of: game.wrongCount) { _, _ in
+            if game.record.isLost {
+                AccessibilityNotification.Announcement("Not quite. Out of extra letters, so the chain broke.").post()
+                return
+            }
             // A wrong guess that shows the last letter finishes the word; the solve announcement covers it.
             guard let i = game.lastWrong, !game.record.solved[i] else { return }
             AccessibilityNotification.Announcement("Not quite. One more letter shown.").post()
@@ -95,15 +99,26 @@ struct GameView: View {
     }
 
     private var controls: some View {
-        HStack {
+        let used = game.record.totalExtra
+        let spare = PuzzleRecord.spareLetters
+        return HStack {
             HStack(spacing: 8) {
-                Eyebrow("Extra letters")
-                Text("\(game.record.totalExtra)")
-                    .scaledFont(15, weight: .bold)
-                    .monospacedDigit()
-                    .contentTransition(.numericText())
+                Eyebrow(game.record.hasSpareLetters ? "Extra letters" : "Last chance")
+                // One pip per spare letter, filled as they're used.
+                HStack(spacing: 5) {
+                    ForEach(0..<spare, id: \.self) { n in
+                        Circle()
+                            .fill(n < used ? Color.ember : Color.clear)
+                            .overlay(Circle().strokeBorder(n < used ? Color.ember : Color.inkSoft, lineWidth: 1.5))
+                            .frame(width: 10, height: 10)
+                    }
+                }
+                .animation(.snappy, value: used)
             }
-            .accessibilityElement(children: .combine)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(game.record.hasSpareLetters
+                ? "Extra letters: \(used) of \(spare) used"
+                : "No extra letters left. One more miss breaks the chain.")
 
             Spacer()
 
@@ -116,6 +131,8 @@ struct GameView: View {
                     .frame(minHeight: 44)
             }
             .foregroundStyle(Color.ink)
+            .opacity(game.record.hasSpareLetters ? 1 : 0.35)
+            .disabled(!game.record.hasSpareLetters)
             .keyboardShortcut("r", modifiers: .command)
         }
         .frame(maxWidth: 600)
@@ -346,7 +363,8 @@ struct WordRow: View {
     private func color(pos: Int, state: SlotState) -> Color {
         switch state {
         case .anchor: .ink
-        case .solved: .pine
+        // Letters that were revealed stay yellow once the word is solved.
+        case .solved: pos > 0 && pos < game.revealed(index) ? .amber : .pine
         case .given: .stone
         case .locked: .clear
         case .active: pos > 0 && pos < game.revealed(index) ? .ember : .ink

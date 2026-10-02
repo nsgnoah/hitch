@@ -3,6 +3,9 @@ import Observation
 
 /// Saved state for one puzzle.
 struct PuzzleRecord: Codable, Equatable {
+    /// Extra letters a player can use. A miss after they're gone breaks the chain.
+    static let spareLetters = 5
+
     /// The chain this record was played against, so edits to the puzzle data invalidate it.
     var chain: String?
     /// Letters showing on each word, counted from the front.
@@ -21,6 +24,9 @@ struct PuzzleRecord: Codable, Equatable {
     }
 
     var isFinished: Bool { finishedAt != nil }
+    /// Finished with words still unsolved: the chain broke.
+    var isLost: Bool { isFinished && solved.contains(false) }
+    var isWon: Bool { isFinished && !solved.contains(false) }
     var isStarted: Bool { revealed.dropFirst().dropLast().contains { $0 > 0 } }
 
     /// Extra letters revealed beyond the free first letter, per middle word.
@@ -30,17 +36,7 @@ struct PuzzleRecord: Codable, Equatable {
 
     var totalExtra: Int { extraLetters.reduce(0, +) }
 
-    /// One square per middle word, for sharing.
-    var emojiRow: String {
-        revealed.indices.dropFirst().dropLast().map { i -> String in
-            if given[i] { return "⚫" }
-            switch max(0, revealed[i] - 1) {
-            case 0: return "🟢"
-            case 1: return "🟡"
-            default: return "🟠"
-            }
-        }.joined()
-    }
+    var hasSpareLetters: Bool { totalExtra < Self.spareLetters }
 }
 
 @Observable
@@ -77,17 +73,21 @@ final class ProgressStore {
 
     var finished: [Int: PuzzleRecord] { records.filter { $0.value.isFinished } }
 
+    var won: [Int: PuzzleRecord] { records.filter { $0.value.isWon } }
+
     var playedCount: Int { finished.count }
 
-    var perfectCount: Int { finished.values.filter { $0.totalExtra == 0 }.count }
+    var winPercent: Int {
+        playedCount == 0 ? 0 : Int((Double(won.count) * 100 / Double(playedCount)).rounded())
+    }
 
-    /// Consecutive daily puzzles finished, ending today (or yesterday, if today isn't done yet).
+    /// Consecutive daily puzzles won, ending today (or yesterday, if today isn't done yet).
     var currentStreak: Int {
-        let done = Set(finished.keys)
+        let wins = Set(won.keys)
         var n = PuzzleBook.todayNumber
-        if !done.contains(n) { n -= 1 }
+        if finished[n] == nil { n -= 1 }
         var streak = 0
-        while n >= 1, done.contains(n) {
+        while n >= 1, wins.contains(n) {
             streak += 1
             n -= 1
         }
@@ -95,19 +95,20 @@ final class ProgressStore {
     }
 
     var longestStreak: Int {
-        let done = Set(finished.keys)
+        let wins = Set(won.keys)
         var best = 0, run = 0
         for n in 1...max(1, PuzzleBook.todayNumber) {
-            run = done.contains(n) ? run + 1 : 0
+            run = wins.contains(n) ? run + 1 : 0
             best = max(best, run)
         }
         return best
     }
 
-    /// Buckets for 0, 1, 2, 3, 4, 5+ extra letters.
+    /// Wins with 0 through 5 extra letters. Wins from before the limit that used more count as 5.
     var distribution: [Int] {
-        var buckets = Array(repeating: 0, count: 6)
-        for r in finished.values { buckets[min(5, r.totalExtra)] += 1 }
+        let top = PuzzleRecord.spareLetters
+        var buckets = Array(repeating: 0, count: top + 1)
+        for r in won.values { buckets[min(top, r.totalExtra)] += 1 }
         return buckets
     }
 }

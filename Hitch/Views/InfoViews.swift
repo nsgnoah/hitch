@@ -29,6 +29,7 @@ struct HowToPlayView: View {
                     bullet("You're given the top and bottom words. Work inward from either end — tap a highlighted row to switch.")
                     bullet("Type your guess and press Go. If the keyboard is hidden, tap the chain to bring it back.")
                     bullet("The first letter of each word is free. Every wrong guess, or tap of Reveal, shows one more letter.")
+                    bullet("You have five extra letters to spare. Miss after they're gone and the chain breaks.")
                     bullet("Fewest extra letters wins bragging rights.")
                 }
 
@@ -44,7 +45,8 @@ struct HowToPlayView: View {
                 .accessibilityLabel("Example chain from SNOW to WHEEL. SNOW, BALL and ROOM are solved; SERVICE is in progress.")
 
                 VStack(alignment: .leading, spacing: 10) {
-                    legend(Text("SEA").foregroundStyle(Color.pine), "Solved")
+                    legend(Text("S").foregroundStyle(Color.pine) + Text("E").foregroundStyle(Color.amber)
+                           + Text("A").foregroundStyle(Color.pine), "Solved. Yellow letters were revealed.")
                     legend(Text("E").foregroundStyle(Color.ember).underline(true, color: .ember), "Revealed letter, costs one")
                     legend(Text("BEAN").foregroundStyle(Color.stone), "Fully revealed")
                 }
@@ -110,7 +112,7 @@ struct HowToPlayView: View {
 
     private let example = Game(
         example: ["SNOW", "BALL", "ROOM", "SERVICE", "STATION", "WAGON", "WHEEL"],
-        revealed: [4, 4, 4, 2, 0, 1, 5],
+        revealed: [4, 1, 2, 2, 0, 1, 5],
         solved: [true, true, true, false, false, false, true],
         selected: 3
     )
@@ -198,7 +200,7 @@ struct StatsView: View {
 
                 HStack(alignment: .top) {
                     stat(store.playedCount, "Played")
-                    stat(store.perfectCount, "Perfect")
+                    stat(store.winPercent, "Win %")
                     stat(store.currentStreak, "Current\nStreak")
                     stat(store.longestStreak, "Max\nStreak")
                 }
@@ -211,7 +213,7 @@ struct StatsView: View {
                     let top = max(1, dist.max() ?? 1)
                     ForEach(dist.indices, id: \.self) { i in
                         HStack(spacing: 8) {
-                            Text(i == 5 ? "5+" : "\(i)")
+                            Text("\(i)")
                                 .scaledFont(14, weight: .semibold, relativeTo: .subheadline)
                                 .monospacedDigit()
                                 .frame(width: labelWidth, alignment: .leading)
@@ -227,7 +229,7 @@ struct StatsView: View {
                             .frame(height: barHeight)
                         }
                         .accessibilityElement(children: .ignore)
-                        .accessibilityLabel("\(i == 5 ? "5 or more extra letters" : i == 1 ? "1 extra letter" : "\(i) extra letters"): \(dist[i]) \(dist[i] == 1 ? "puzzle" : "puzzles")")
+                        .accessibilityLabel("\(i == 1 ? "1 extra letter" : "\(i) extra letters"): \(dist[i]) \(dist[i] == 1 ? "win" : "wins")")
                     }
                 }
             }

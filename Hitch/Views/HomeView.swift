@@ -179,7 +179,7 @@ struct ChainTeaser: View {
     }
 
     private func shown(_ i: Int) -> Bool {
-        i == 0 || i == puzzle.words.count - 1 || record.solved[i]
+        i == 0 || i == puzzle.words.count - 1 || record.solved[i] || record.isFinished
     }
 
     private var accessibilityText: String {

@@ -49,6 +49,8 @@ final class Game {
         if i == 0 || i == words.count - 1 { return .anchor }
         if record.given[i] { return .given }
         if record.solved[i] { return .solved }
+        // Once the chain breaks, the words left unsolved are shown like revealed ones.
+        if isFinished { return .given }
         if i == topFrontier || i == bottomFrontier { return .active }
         return .locked
     }
@@ -58,7 +60,7 @@ final class Game {
     /// The letter to show at a position, if any (revealed or typed).
     func letter(_ i: Int, _ pos: Int) -> Character? {
         let word = Array(words[i])
-        if record.solved[i] || pos < record.revealed[i] { return word[pos] }
+        if record.solved[i] || isFinished || pos < record.revealed[i] { return word[pos] }
         if i == selected {
             let t = pos - record.revealed[i]
             if t < typed.count { return typed[t] }
@@ -111,15 +113,26 @@ final class Game {
         } else {
             lastWrong = i
             wrongCount += 1
-            revealLetter(in: i)
+            if record.hasSpareLetters {
+                revealLetter(in: i)
+            } else {
+                breakChain()
+            }
         }
     }
 
     /// Show one more letter of the selected word. Costs the same as a wrong guess.
     func hint() {
-        guard let i = selected, !isFinished else { return }
+        guard let i = selected, !isFinished, record.hasSpareLetters else { return }
         typed = []
         revealLetter(in: i)
+    }
+
+    /// A miss with no spare letters left ends the game with the chain unsolved.
+    private func breakChain() {
+        record.finishedAt = .now
+        selected = nil
+        persist()
     }
 
     private func revealLetter(in i: Int) {
@@ -148,7 +161,7 @@ final class Game {
     }
 
     private func refreshFrontier(preferTop: Bool) {
-        guard let top = topFrontier, let bottom = bottomFrontier else {
+        guard !isFinished, let top = topFrontier, let bottom = bottomFrontier else {
             selected = nil
             return
         }
@@ -166,9 +179,21 @@ final class Game {
 
     // MARK: Sharing
 
+    /// The chain as it ended: the two given words, with a square for each letter between.
+    /// Green was guessed, yellow was revealed, white belongs to a word left unsolved.
     var shareText: String {
-        let hints = record.totalExtra
-        let summary = hints == 0 ? "Perfect chain" : "\(hints) extra letter\(hints == 1 ? "" : "s")"
-        return "Hitch No. \(puzzle.number)\n\(record.emojiRow)\n\(summary)"
+        let n = record.totalExtra
+        let result = record.isLost ? "Chain broke"
+            : n == 0 ? "Perfect chain"
+            : "\(n) extra letter\(n == 1 ? "" : "s")"
+        let rows = words.indices.map { i -> String in
+            switch state(i) {
+            case .anchor: return words[i]
+            case .solved:
+                return (0..<words[i].count).map { pos in pos > 0 && pos < record.revealed[i] ? "🟨" : "🟩" }.joined()
+            default: return String(repeating: "⬜", count: words[i].count)
+            }
+        }
+        return (["Hitch No. \(puzzle.number) · \(result)"] + rows).joined(separator: "\n")
     }
 }
