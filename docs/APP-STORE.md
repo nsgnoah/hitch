@@ -32,9 +32,10 @@ Age rating note: a few chains contain ordinary compound words such as "root beer
 weapon content, the way word games are usually rated. Revisit this if a chain ever becomes
 thematic.
 
-### Still to do
+### Submitted
 
-1. **Add for Review**, then **Submit for Review**.
+Version 1.0 (build 6) was submitted for App Review on October 2, 2026 at 12:39 PM CDT and is
+Waiting for Review. It releases automatically once approved.
 
 App Review notes, as entered:
 
