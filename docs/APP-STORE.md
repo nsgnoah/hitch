@@ -25,6 +25,7 @@ Noah Greensweig (team `S6QW7SV228`).
 | Build | 6 (version 1.0), attached to the version October 2, with the cream ink-and-pine icon. Build 4 added yellow revealed letters, the five-letter limit and the new share; build 3 was the first with `PrivacyInfo.xcprivacy` |
 | Release | Automatically after approval |
 | Screenshots | iPhone 6.9" (6) and iPad 13" (4) from `appstore/screenshots`, uploaded October 2. The 6.9" set also covers the 6.5" and 6.7" sizes |
+| App Review Information | No sign-in required; contact Noah Greensweig, `noah@nsgsolutions.co`, and the same phone number as Spinola; notes below |
 
 Age rating note: a few chains contain ordinary compound words such as "root beer", "beer garden",
 "shot glass", "gun shot" and "gun powder". These were treated as vocabulary rather than alcohol or
@@ -33,21 +34,20 @@ thematic.
 
 ### Still to do
 
-1. **App Review Information.** Untick "Sign-in required" and fill the contact: Noah Greensweig,
-   `noah@nsgsolutions.co`, and a phone number starting with `+1`. App Store Connect won't save this
-   section without the phone number. Notes:
+1. **Add for Review**, then **Submit for Review**.
 
-   > Hitch is a daily word puzzle with no accounts, sign-in, purchases, ads, or network access, so
-   > every feature is available right away.
-   >
-   > To play: tap Play on the home screen, type a guess, and press Go (return). Each wrong guess,
-   > or "Reveal a letter", shows one more letter. Tap a highlighted row to switch between the top
-   > and bottom ends. Earlier chains are under Archive, Statistics is the bar-chart button, and How
-   > to Play is the ? button.
-   >
-   > The privacy policy and contact email are in the app under How to Play > About.
+App Review notes, as entered:
 
-2. **Add for Review**, then **Submit for Review**.
+> Hitch is a daily word puzzle with no accounts, sign-in, purchases, ads, or network access, so
+> every feature is available right away.
+>
+> To play: tap Play on the home screen, type a guess, and press Go (return). Each wrong guess, or
+> "Reveal a letter", shows one more letter. Each chain allows five extra letters; a wrong guess
+> after those are used ends the game and shows the full chain. Tap a highlighted row to switch
+> between the top and bottom ends. Earlier chains are under Archive, Statistics is the bar-chart
+> button, and How to Play is the ? button.
+>
+> The privacy policy and contact email are in the app under How to Play > About.
 
 ## Screenshots
 
