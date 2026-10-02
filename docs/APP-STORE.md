@@ -24,6 +24,7 @@ Noah Greensweig (team `S6QW7SV228`).
 | Copyright | `2026 Noah Greensweig` |
 | Build | 5 (version 1.0), uploaded October 2 with the gold-and-cream icon. Build 4 added yellow revealed letters, the five-letter limit and the new share; build 3 was the first with `PrivacyInfo.xcprivacy` |
 | Release | Automatically after approval |
+| Screenshots | iPhone 6.9" (6) and iPad 13" (4) from `appstore/screenshots`, uploaded October 2. The 6.9" set also covers the 6.5" and 6.7" sizes |
 
 Age rating note: a few chains contain ordinary compound words such as "root beer", "beer garden",
 "shot glass", "gun shot" and "gun powder". These were treated as vocabulary rather than alcohol or
@@ -32,10 +33,8 @@ thematic.
 
 ### Still to do
 
-1. **Screenshots.** In Media Manager, drag `appstore/screenshots/iphone-6.9/*` into iPhone 6.9"
-   Display and `appstore/screenshots/ipad-13/*` into iPad 13" Display, in filename order. They are
-   1320×2868 and 2064×2752 JPEGs with no alpha channel. The iPad set leaves out Results and How to
-   Play because those sheets cut off inside the iPad's centered card.
+1. **Build.** Version 1.0 still has build 3 attached. Switch it to build 5 so the app matches the
+   screenshots.
 2. **App Review Information.** Untick "Sign-in required" and fill the contact: Noah Greensweig,
    `noah@nsgsolutions.co`, and a phone number starting with `+1`. App Store Connect won't save this
    section without the phone number. Notes:
