@@ -65,4 +65,6 @@ while this repo is public. Spinola's pages at `nsgnoah.github.io/ola/` went down
 repo was private; it was made public again on October 2.
 
 The privacy policy also lives in the app (`PrivacyPolicyView` in `Hitch/Views/InfoViews.swift`).
-Change both together.
+Change both together. The October 2 update (describing the new share) is live on the site and
+in the repo, but build 6, the one in review, still shows the September 27 wording in the app;
+the next build brings it in line.
