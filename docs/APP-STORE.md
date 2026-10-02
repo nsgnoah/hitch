@@ -22,7 +22,7 @@ Noah Greensweig (team `S6QW7SV228`).
 | Promotional text, description, keywords | Filled; keywords use 93 of 100 characters |
 | Support URL | `https://nsgnoah.github.io/hitch/` |
 | Copyright | `2026 Noah Greensweig` |
-| Build | 4 (version 1.0), uploaded October 2 with yellow revealed letters, the five-letter limit and the new share. Build 3 was the first with `PrivacyInfo.xcprivacy`; the slimmer gold-and-cream icon needs build 5 |
+| Build | 5 (version 1.0), uploaded October 2 with the gold-and-cream icon. Build 4 added yellow revealed letters, the five-letter limit and the new share; build 3 was the first with `PrivacyInfo.xcprivacy` |
 | Release | Automatically after approval |
 
 Age rating note: a few chains contain ordinary compound words such as "root beer", "beer garden",
