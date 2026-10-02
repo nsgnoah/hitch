@@ -61,8 +61,8 @@ and an iPad Pro 13-inch (M5) simulator, iOS 26, at 9:41 with a full battery.
 
 `site/` holds the support page and privacy policy. `.github/workflows/pages.yml` publishes it to
 `https://nsgnoah.github.io/hitch/` whenever `site/` changes on `main`. GitHub Pages only serves it
-while this repo is public; the Spinola policy at `nsgnoah.github.io/ola/` stopped resolving when
-the `ola` repo went private.
+while this repo is public. Spinola's pages at `nsgnoah.github.io/ola/` went down while the `ola`
+repo was private; it was made public again on October 2.
 
 The privacy policy also lives in the app (`PrivacyPolicyView` in `Hitch/Views/InfoViews.swift`).
 Change both together.
