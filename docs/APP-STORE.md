@@ -26,6 +26,7 @@ Noah Greensweig (team `S6QW7SV228`).
 | Release | Automatically after approval |
 | Screenshots | iPhone 6.9" (6) and iPad 13" (4) from `appstore/screenshots`, uploaded October 2. The 6.9" set also covers the 6.5" and 6.7" sizes |
 | App Review Information | No sign-in required; contact Noah Greensweig, `noah@nsgsolutions.co`, and the same phone number as Spinola; notes below |
+| TestFlight testers | Internal groups "Me" (Noah) and "Family" (Alex Dye, added October 3; her App Store Connect user was given access to Hitch), both with automatic distribution, the same setup as Stride |
 
 Age rating note: a few chains contain ordinary compound words such as "root beer", "beer garden",
 "shot glass", "gun shot" and "gun powder". These were treated as vocabulary rather than alcohol or
