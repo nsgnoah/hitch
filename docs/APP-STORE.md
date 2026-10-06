@@ -36,7 +36,14 @@ thematic.
 ### Submitted
 
 Version 1.0 (build 6) was submitted for App Review on October 2, 2026 at 12:39 PM CDT and is
-Waiting for Review. It releases automatically once approved.
+Waiting for Review. It releases automatically once approved. It was still Waiting for Review on
+October 6.
+
+### Next update: 1.0.1 (build 8)
+
+Build 8 is version 1.0.1, the same code as build 7, and was uploaded October 6. It can't join
+version 1.0, and App Store Connect won't take a new version while 1.0 is in review. Once 1.0 is
+live, create version 1.0.1, attach build 8, add What's New text, and submit it.
 
 App Review notes, as entered:
 
@@ -68,4 +75,4 @@ repo was private; it was made public again on October 2.
 The privacy policy also lives in the app (`PrivacyPolicyView` in `Hitch/Views/InfoViews.swift`).
 Change both together. The October 2 update (describing the new share) is live on the site and
 in the repo, but build 6, the one in review, still shows the September 27 wording in the app;
-the next build brings it in line.
+build 8 (version 1.0.1) brings it in line.
