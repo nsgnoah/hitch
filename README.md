@@ -22,7 +22,7 @@ Accessibility: VoiceOver labels and announcements for every guess and solve, Dyn
 - `Hitch/HitchApp.swift` — entry point; puts the shared `ProgressStore` in the environment.
 - `Hitch/Model/` — `PuzzleBook` (which chain is today's), `Game` (one puzzle's rules and input), `Progress` (saved records and statistics).
 - `Hitch/Views/` — `HomeView`, `GameView` (board, knots, letter slots), `ResultsView`, `InfoViews` (How to Play, Privacy Policy, Statistics, Archive), `KeyCatcher`, `Theme` (colors, fonts, button styles).
-- `Hitch/Resources/chains.json` — the puzzles: 100 chains of seven words.
+- `Hitch/Resources/chains.json` — the puzzles: 150 chains of seven words.
 - `Hitch/PrivacyInfo.xcprivacy` — privacy manifest.
 - `scripts/make_icon.swift` — draws the app icon.
 - `site/` — support page and privacy policy, published with GitHub Pages.
@@ -55,7 +55,8 @@ Version and build number are `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` i
 
 - No. 1 is September 1, 2026, backdated so the Archive had chains on day one. Each calendar day after that is the next number.
 - Day math uses the Gregorian calendar in the device's current time zone, whatever calendar the user displays, so the chain changes at local midnight.
-- Puzzle *n* is chain `(n - 1) % 100` from `chains.json`, so the 100 chains start over at No. 101 (December 10, 2026) unless more are added.
+- Puzzle *n* is chain `(n - 1) % 150` from `chains.json`, so the 150 chains start over at No. 151 (January 29, 2027) unless more are added.
+- Add new chains only at the end of `chains.json`. Inserting or reordering shifts which chain every number gets, and saved records for those numbers no longer match. Appending also changes what numbers past the old count map to, so ship new chains in a build that's live before the current set runs out.
 
 ## Rules and saving
 
